@@ -148,14 +148,21 @@ async function doRegister() {
       await new Promise(function(r){ setTimeout(r,1200); });
       var users = getUsers();
       if (Object.values(users).find(function(u){ return u.username===user; })) { showMsg('Username already taken.'); setLoading('reg-btn','reg-spin','reg-icon',false); return; }
-      if (Object.values(users).find(function(u){ return u.email===email; }))   { showMsg('Email already registered.'); setLoading('reg-btn','reg-spin','reg-icon',false); return; }
+      if (Object.values(users).find(function(u){ return u.email===email; }))   { showMsg('Email already Registered'); setLoading('reg-btn','reg-spin','reg-icon',false); return; }
       var uid = 'u_'+Date.now();
       var nu = { uid, username:user, email, password:btoa(pass), pwUsername:pw, createdAt:Date.now() };
       users[uid]=nu; saveUsers(users); setLocalSess(nu);
       showMsg('✅ Account created! Activating your free trial...','ok');
       setTimeout(function(){ location.href='store.html?trial=activated'; },1800);
     }
-  } catch(e) { showMsg(e.message||'Registration failed.'); }
+  } catch(e) {
+    var raw = (e && e.message) ? String(e.message) : '';
+    var low = raw.toLowerCase();
+    if (low.indexOf('already registered') >= 0 || low.indexOf('user already') >= 0 || (low.indexOf('email') >= 0 && low.indexOf('already') >= 0))
+      showMsg('Email already Registered');
+    else
+      showMsg(raw || 'Registration failed.');
+  }
   setLoading('reg-btn','reg-spin','reg-icon',false);
 }
 

@@ -1,0 +1,77 @@
+================================================================================
+VLONE — Hubungkan GitHub (akun A) + Vercel (akun B) — beda email boleh
+================================================================================
+
+Intinya: login Vercel pakai akun Vercel kamu. Waktu "Import Git Repository",
+browser akan minta login GitHub — login pakai akun GitHub yang punya repo ini.
+Keduanya TIDAK harus email yang sama.
+
+--------------------------------------------------------------------------------
+1) Perbaiki nama & email Git (sekali, supaya commit kamu kelihatan di GitHub)
+--------------------------------------------------------------------------------
+Di folder proyek ini, jalankan (ganti dengan data kamu):
+
+  git config user.name "Nama Kamu"
+  git config user.email "email-yang-terdaftar-di-github@..."
+
+(Opsional) Set global untuk semua repo:
+
+  git config --global user.name "Nama Kamu"
+  git config --global user.email "email@..."
+
+Kalau mau perbaiki author commit terakhir setelah ubah config:
+
+  git commit --amend --reset-author --no-edit
+
+--------------------------------------------------------------------------------
+2) Buat repo kosong di GitHub (akun yang punya kode)
+--------------------------------------------------------------------------------
+- Buka https://github.com/new
+- Nama repo: misalnya vlone-web (huruf kecil, tanpa spasi)
+- Jangan centang README / .gitignore / license (repo benar-benar kosong)
+- Create repository
+
+--------------------------------------------------------------------------------
+3) Push kode dari PC ke GitHub
+--------------------------------------------------------------------------------
+Ganti YOUR_USER dan vlone-web dengan username GitHub & nama repo kamu:
+
+  git remote add origin https://github.com/YOUR_USER/vlone-web.git
+  git push -u origin main
+
+Kalau GitHub minta login: pakai akun GitHub yang sama dengan pemilik repo.
+
+--------------------------------------------------------------------------------
+4) Import ke Vercel (akun Vercel kamu — boleh beda dari GitHub)
+--------------------------------------------------------------------------------
+- Login https://vercel.com dengan akun Vercel
+- Add New Project → Import Git Repository
+- Kalau GitHub belum terhubung: Continue with GitHub → login dengan AKUN GITHUB
+  yang punya repo vlone-web (boleh beda dari email Vercel)
+- Pilih repo → Deploy
+
+Build otomatis memakai vercel.json:
+  - Build: npm run build
+  - Output: dist
+
+--------------------------------------------------------------------------------
+5) Environment variables di Vercel (wajib untuk /api/verify)
+--------------------------------------------------------------------------------
+Project → Settings → Environment Variables → tambahkan:
+
+  SUPABASE_URL
+  SUPABASE_SERVICE_ROLE_KEY
+  JWT_SECRET
+
+Lalu redeploy (Deployments → ... → Redeploy).
+
+--------------------------------------------------------------------------------
+6) Kalau repo GitHub tidak muncul di daftar Vercel
+--------------------------------------------------------------------------------
+- Di GitHub: Settings → Applications → Authorized OAuth Apps / Installed GitHub Apps
+  → pastikan Vercel punya akses ke akun atau organisasi tempat repo berada.
+- Atau: GitHub repo → Settings → Collaborators — tambahkan akun lain jika perlu.
+
+--------------------------------------------------------------------------------
+Endpoint setelah hidup: https://<nama-proyek>.vercel.app/api/verify
+================================================================================

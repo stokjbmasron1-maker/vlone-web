@@ -82,7 +82,11 @@ function renderProfile(user, profile, subs) {
   const vtokens   = (profile && profile.vtokens) || 0;
   _currentVT = vtokens;
 
-  const isDev = username.toLowerCase() === 'claire' || email === 'darkphrince@gmail.com';
+  const devUsernames = ['claire', 'codespark'];
+  const devEmails = ['darkphrince@gmail.com', 'galciusvaidas@gmail.com'];
+  const isDev =
+    devUsernames.includes(username.toLowerCase()) ||
+    devEmails.includes((email || '').toLowerCase());
 
   // Header
   document.getElementById('prof-avatar').textContent = username[0].toUpperCase();

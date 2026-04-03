@@ -327,6 +327,13 @@ window._sb = createClient(
   </div>
 </div>
 
+<div class="modal-bg" id="key-info-modal" onclick="if(event.target===this)closeKeyInfoModal()">
+  <div class="modal" style="max-width:440px">
+    <button class="modal-close" onclick="closeKeyInfoModal()"><i class="fas fa-xmark"></i></button>
+    <div id="key-info-inner"></div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="js/profile.js"></script>

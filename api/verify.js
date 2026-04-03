@@ -99,6 +99,11 @@ export default async function handler(req, res) {
 
   const key = normalizeKey(body.key);
   const hwid = typeof body.hwid === 'string' ? body.hwid.trim() : '';
+  const deviceNameRaw = typeof body.device_name === 'string' ? body.device_name.trim() : '';
+  const deviceName =
+    deviceNameRaw.length > 0
+      ? deviceNameRaw.replace(/[\u0000-\u001F\u007F]/g, '').slice(0, 128)
+      : '';
   if (!key) {
     return json(res, 400, { valid: false, message: 'Invalid key format' });
   }
@@ -142,12 +147,14 @@ export default async function handler(req, res) {
 
   if (!bound) {
     const nextCount = (typeof row.device_count === 'number' ? row.device_count : 0) + 1;
+    const bindPatch = {
+      hwid: hwid,
+      device_count: nextCount,
+    };
+    if (deviceName) bindPatch.device_name = deviceName;
     const { data: updated, error: uErr } = await supabase
       .from('subscriptions')
-      .update({
-        hwid: hwid,
-        device_count: nextCount,
-      })
+      .update(bindPatch)
       .eq('id', row.id)
       .is('hwid', null)
       .select('id')
@@ -176,9 +183,11 @@ export default async function handler(req, res) {
     return json(res, 200, { valid: false, message: mismatchMsg });
   }
 
+  const touchPatch = { last_verified_at: now.toISOString() };
+  if (deviceName) touchPatch.device_name = deviceName;
   const { error: touchErr } = await supabase
     .from('subscriptions')
-    .update({ last_verified_at: now.toISOString() })
+    .update(touchPatch)
     .eq('id', row.id);
   if (touchErr) console.error('verify touch', touchErr);
 

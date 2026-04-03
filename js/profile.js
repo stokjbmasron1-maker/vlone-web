@@ -19,6 +19,113 @@ async function waitForSB(ms = 5000) {
   return window._sb;
 }
 
+function licenseKeyForDisplay(s) {
+  if (s.license_key && String(s.license_key).trim()) {
+    return String(s.license_key).trim().toUpperCase();
+  }
+  const id8 = (s.id || '').replace(/-/g, '').substring(0, 8).toUpperCase();
+  return `VLN-${id8}-${(s.plan || 'UNK').substring(0, 3).toUpperCase()}`;
+}
+
+function escHtml(t) {
+  if (t == null) return '';
+  return String(t)
+    .replace(/&/g, '&amp;')
+    .replace(/</g, '&lt;')
+    .replace(/"/g, '&quot;')
+    .replace(/'/g, '&#39;');
+}
+
+function linkedDevicesForSubscription(s) {
+  const rows = [];
+  const dn = s.device_name && String(s.device_name).trim();
+  const hw = s.hwid && String(s.hwid).trim();
+  if (dn) {
+    rows.push({ title: dn, sub: hw ? 'Saved when this PC verified the license.' : '' });
+  }
+  if (hw && !dn) {
+    if (hw.startsWith('pc-')) {
+      rows.push({ title: hw.slice(3), sub: 'PC name (from client HWID)' });
+    } else if (hw.startsWith('mg-')) {
+      rows.push({ title: 'Windows PC', sub: 'Machine ID …' + hw.slice(-14) });
+    } else {
+      rows.push({
+        title: 'Linked device',
+        sub: hw.length > 56 ? hw.slice(0, 56) + '…' : hw,
+      });
+    }
+  }
+  if (rows.length === 0) {
+    rows.push({
+      title: 'No device linked yet',
+      sub: 'Open the VLONE client on your PC and verify this key once.',
+    });
+  }
+  return rows;
+}
+
+function closeKeyInfoModal() {
+  const el = document.getElementById('key-info-modal');
+  if (el) el.classList.remove('show');
+}
+
+function openKeyInfoModal(subId) {
+  const subs = window._profileSubsList || [];
+  const s = subs.find((x) => x.id === subId);
+  if (!s) return;
+  const kpl = { trial: 'Trial', daily: 'Daily', monthly: 'Monthly', lifetime: 'Lifetime' };
+  const keyVal = licenseKeyForDisplay(s);
+  const planLbl = kpl[s.plan] || s.plan;
+  let expLine = '—';
+  if (s.plan === 'lifetime' || !s.expires_at) {
+    expLine = s.plan === 'lifetime' ? 'Lifetime access' : 'No expiry set';
+  } else {
+    expLine = new Date(s.expires_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
+  }
+  const devices = linkedDevicesForSubscription(s);
+  const devHtml = devices
+    .map(
+      (d) => `
+    <div style="background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.15);border-radius:10px;padding:10px 12px;margin-bottom:8px">
+      <div style="font-weight:700;font-size:14px;color:var(--t1)">${escHtml(d.title)}</div>
+      ${
+        d.sub
+          ? `<div style="font-size:11px;color:var(--t2);margin-top:4px;line-height:1.45">${escHtml(d.sub)}</div>`
+          : ''
+      }
+    </div>`
+    )
+    .join('');
+
+  const inner = document.getElementById('key-info-inner');
+  if (!inner) return;
+  inner.innerHTML = `
+    <div style="text-align:center;margin-bottom:18px">
+      <div style="font-size:36px;margin-bottom:8px">&#128273;</div>
+      <h2 style="font-size:16px;margin-bottom:4px;font-family:'Orbitron',monospace">License info</h2>
+      <div style="font-size:12px;color:var(--t2)">Key, plan, expiry, and linked device</div>
+    </div>
+    <div style="background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.15);border-radius:12px;padding:14px;margin-bottom:14px">
+      <div style="font-size:11px;color:var(--t2);font-weight:600;margin-bottom:4px;text-transform:uppercase;letter-spacing:.4px">License key</div>
+      <div style="font-family:'Orbitron',monospace;font-size:14px;font-weight:700;word-break:break-all">${escHtml(keyVal)}</div>
+    </div>
+    <div style="display:grid;gap:10px;margin-bottom:16px;font-size:13px">
+      <div><span style="color:var(--t2)">Plan:</span> <strong>${escHtml(planLbl)}</strong></div>
+      <div><span style="color:var(--t2)">Access / expiry:</span> <strong>${escHtml(expLine)}</strong></div>
+      <div><span style="color:var(--t2)">Activation count:</span> <strong>${typeof s.device_count === 'number' ? s.device_count : s.hwid ? 1 : 0}</strong></div>
+    </div>
+    <div style="font-size:11px;color:var(--t2);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px"><i class="fas fa-desktop"></i> Linked device name</div>
+    <div style="margin-bottom:8px">${devHtml}</div>
+    <div class="modal-note" style="margin-top:14px">
+      <i class="fas fa-info-circle"></i>
+      Each key is tied to one PC. The device name is your Windows computer name when you verify in the VLONE client.
+    </div>
+    <div style="text-align:center;margin-top:16px">
+      <button type="button" onclick="closeKeyInfoModal()" class="submit-btn" style="max-width:220px;margin:0 auto;display:block"><i class="fas fa-check"></i> Close</button>
+    </div>`;
+  document.getElementById('key-info-modal').classList.add('show');
+}
+
 function getSBToken() {
   try {
     const raw = localStorage.getItem('sb-eyqvcsfebrwsemiwkajg-auth-token');
@@ -214,13 +321,10 @@ function renderProfile(user, profile, subs) {
       renderSubList();
     }
 
-    // ── Manage Keys: all keys with full duration info + device count ──
+    window._profileSubsList = subs;
+
     function makeKey(s) {
-      if (s.license_key && String(s.license_key).trim()) {
-        return String(s.license_key).trim().toUpperCase();
-      }
-      const id8 = (s.id || '').replace(/-/g,'').substring(0,8).toUpperCase();
-      return `VLN-${id8}-${(s.plan||'UNK').substring(0,3).toUpperCase()}`;
+      return licenseKeyForDisplay(s);
     }
     function makeDurationChip(s) {
       if (s.plan === 'lifetime' || !s.expires_at) {
@@ -247,15 +351,24 @@ function renderProfile(user, profile, subs) {
           ${!isOnly ? `<div style="font-size:11px;color:var(--t2);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:5px">
             <i class="fas fa-key" style="color:var(--p)"></i> License #${i+1} &mdash; ${kpl[s.plan]||s.plan}
           </div>` : ''}
-          <div class="key-box">
+          <div class="key-box" style="flex-wrap:wrap">
             <span class="key-val">${kv}</span>
-            <button class="key-copy" onclick="copyText('${kv}')"><i class="fas fa-copy"></i> Copy</button>
+            <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap">
+              <button type="button" class="key-copy" onclick="copyText('${kv}')"><i class="fas fa-copy"></i> Copy</button>
+              <button type="button" class="key-copy" onclick="openKeyInfoModal('${s.id}')" title="License and device info"><i class="fas fa-circle-info"></i> Info</button>
+            </div>
           </div>
           <div class="key-info-row" style="margin-top:8px;flex-wrap:wrap;gap:6px">
             <div class="key-chip"><i class="fas fa-circle" style="color:var(--g)"></i> Active — ${kpl[s.plan]||s.plan}</div>
             ${makeDurationChip(s)}
             ${makeExpChip(s)}
-            <div class="key-chip" style="color:var(--t2);border-color:rgba(148,163,184,.15)"><i class="fas fa-desktop"></i> ${s.hwid ? `Device bound (${s.device_count ?? 1})` : 'Device: activate in client'}</div>
+            <div class="key-chip" style="color:var(--t2);border-color:rgba(148,163,184,.15)"><i class="fas fa-desktop"></i> ${
+              s.hwid
+                ? s.device_name && String(s.device_name).trim()
+                  ? escHtml(String(s.device_name).trim().slice(0, 28)) + (String(s.device_name).trim().length > 28 ? '…' : '')
+                  : `Device bound (${s.device_count ?? 1})`
+                : 'Device: activate in client'
+            }</div>
             <div class="key-chip"><i class="fas fa-shield-halved" style="color:var(--g)"></i> Undetected</div>
           </div>
         </div>`;

@@ -1,0 +1,400 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>VLONE CHEATS — #1 PixelWorlds Cheat</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="css/store.css"/>
+<!-- Fast session check: set class before render to avoid flash -->
+<script>
+(function(){
+  var raw=localStorage.getItem('sb-eyqvcsfebrwsemiwkajg-auth-token')||localStorage.getItem('vlone_session');
+  if(!raw)return;
+  try{
+    var p=JSON.parse(raw);
+    var u=(p.user&&(p.user.user_metadata||{}).username)||(p.user&&p.user.email)||p.username;
+    if(u){
+      document.documentElement.classList.add('sb-authed');
+      document.addEventListener('DOMContentLoaded',function(){
+        var el=document.getElementById('nav-uname');
+        if(el)el.textContent=u;
+      });
+    }
+  }catch(e){}
+})();
+</script>
+</head>
+<body>
+<canvas id="bg"></canvas>
+<div class="z">
+
+<!-- NAV -->
+<nav id="nav">
+  <div class="logo">VLONE</div>
+  <ul class="nl">
+    <li><a href="#features">Features</a></li>
+    <li><a href="#pricing">Pricing</a></li>
+    <li><a href="#status">Status</a></li>
+    <li><a href="#reviews">Reviews</a></li>
+  </ul>
+  <div style="display:flex;gap:8px;align-items:center">
+    <a href="profile.html" id="nav-profile" style="display:none;align-items:center;gap:7px;background:rgba(168,85,247,.1);border:1px solid rgba(168,85,247,.25);border-radius:9px;padding:7px 14px;font-size:12px;font-weight:600;color:var(--t1);text-decoration:none;transition:.2s" onmouseover="this.style.background='rgba(168,85,247,.2)'" onmouseout="this.style.background='rgba(168,85,247,.1)'">
+      <i class="fas fa-circle-user" style="color:var(--p);font-size:15px"></i>
+      <span id="nav-uname">Profile</span>
+    </a>
+    <a href="profile.html?buy=1" id="nav-vt" style="display:none;align-items:center;gap:5px;background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.18);border-radius:9px;padding:6px 12px;font-size:11px;font-weight:700;color:var(--p);text-decoration:none;transition:.2s">
+      <i class="fas fa-coins" style="font-size:12px"></i>
+      <span id="nav-vt-num">0 VT</span>
+    </a>
+    <a href="auth.html" id="nav-login" class="btn bo" style="font-size:12px;padding:7px 14px"><i class="fas fa-right-to-bracket"></i> Login</a>
+    <a href="#pricing" class="btn bg"><i class="fas fa-key"></i> Buy Now</a>
+  </div>
+</nav>
+
+<!-- TRIAL TOAST -->
+<div id="trial-toast" style="display:none;position:fixed;top:80px;left:50%;transform:translateX(-50%);z-index:200;background:linear-gradient(135deg,rgba(16,185,129,.15),rgba(6,182,212,.1));border:1px solid rgba(16,185,129,.35);border-radius:12px;padding:12px 24px;font-size:13px;font-weight:600;color:#6ee7b7;backdrop-filter:blur(20px);box-shadow:0 10px 40px rgba(0,0,0,.4);animation:fU .5s ease both"><i class="fas fa-gift" style="margin-right:8px"></i>🎉 Free 1-Day Trial Activated! Enjoy full access for 24 hours.</div>
+
+<!-- HERO -->
+<section class="hero">
+  <div class="badge"><div class="pdot"></div> #1 PixelWorlds Cheat — Trusted by 5,000+ Players</div>
+  <h1>
+    <span class="glitch" data-text="PIXEL">PIXEL</span>
+    <span class="grad" style="display:block">WORLDS HACKS</span>
+  </h1>
+  <p>The most powerful and undetected cheat for PixelWorlds. God Mode, Auto Farming, ESP &amp; more — dominate every server.</p>
+  <div class="hero-btns">
+    <a href="#pricing" class="btn bg" style="padding:13px 28px;font-size:15px"><i class="fas fa-key"></i> Get Access Now</a>
+    <a href="#features" class="btn bo" style="padding:13px 28px;font-size:15px"><i class="fas fa-list-check"></i> View Features</a>
+  </div>
+  <div class="stats-row">
+    <div class="st"><div class="st-v" data-target="5000">0</div><div class="st-l">Active Users</div></div>
+    <div class="st"><div class="st-v" data-target="99">0</div><div class="st-l">% Uptime</div></div>
+    <div class="st"><div class="st-v" data-target="14">0</div><div class="st-l">Features</div></div>
+    <div class="st"><div class="st-v" data-target="24">0</div><div class="st-l">/7 Support</div></div>
+  </div>
+  <div class="scroll-ind"><span>Scroll</span><i class="fas fa-chevron-down" style="color:var(--p)"></i></div>
+</section>
+
+<!-- MARQUEE -->
+<div class="mq-wrap">
+  <div class="mq">
+    <span class="mqi"><i class="fas fa-shield-halved"></i>God Mode</span>
+    <span class="mqi"><i class="fas fa-eye"></i>Player ESP</span>
+    <span class="mqi"><i class="fas fa-fish"></i>Auto Fishing</span>
+    <span class="mqi"><i class="fas fa-bolt"></i>Speed Hacks</span>
+    <span class="mqi"><i class="fas fa-gem"></i>Gemstone ESP</span>
+    <span class="mqi"><i class="fas fa-arrow-up"></i>Jump &amp; Gravity</span>
+    <span class="mqi"><i class="fas fa-pickaxe"></i>Auto Mining</span>
+    <span class="mqi"><i class="fas fa-fire"></i>Auto Nether</span>
+    <span class="mqi"><i class="fas fa-ban"></i>Anti Bounce</span>
+    <span class="mqi"><i class="fas fa-key"></i>Instant Delivery</span>
+    <span class="mqi"><i class="fas fa-shield-halved"></i>God Mode</span>
+    <span class="mqi"><i class="fas fa-eye"></i>Player ESP</span>
+    <span class="mqi"><i class="fas fa-fish"></i>Auto Fishing</span>
+    <span class="mqi"><i class="fas fa-bolt"></i>Speed Hacks</span>
+    <span class="mqi"><i class="fas fa-gem"></i>Gemstone ESP</span>
+    <span class="mqi"><i class="fas fa-arrow-up"></i>Jump &amp; Gravity</span>
+    <span class="mqi"><i class="fas fa-pickaxe"></i>Auto Mining</span>
+    <span class="mqi"><i class="fas fa-fire"></i>Auto Nether</span>
+    <span class="mqi"><i class="fas fa-ban"></i>Anti Bounce</span>
+    <span class="mqi"><i class="fas fa-key"></i>Instant Delivery</span>
+  </div>
+</div>
+
+<!-- FEATURES -->
+<section class="feat-bg" id="features">
+  <div class="reveal" style="text-align:center;margin-bottom:0">
+    <div class="sec-lbl">⚡ Full Feature List</div>
+    <h2 class="sec-title">Everything You Get</h2>
+    <p class="sec-sub" style="margin:0 auto 0">One subscription, all features unlocked. No hidden paywalls.</p>
+  </div>
+  <div class="feat-grid">
+    <div class="feat-card reveal"><div class="feat-icon" style="background:rgba(239,68,68,.1);color:#ef4444"><i class="fas fa-shield-halved"></i></div><div><div class="feat-name">God Mode</div><div class="feat-desc">Become completely invincible. No damage taken from any source.</div></div></div>
+    <div class="feat-card reveal"><div class="feat-icon" style="background:rgba(168,85,247,.1);color:var(--p)"><i class="fas fa-ban"></i></div><div><div class="feat-name">Anti Bounce</div><div class="feat-desc">Prevent all bounce effects from blocks and traps in-game.</div></div></div>
+    <div class="feat-card reveal"><div class="feat-icon" style="background:rgba(6,182,212,.1);color:var(--c)"><i class="fas fa-wind"></i></div><div><div class="feat-name">Anti Fan</div><div class="feat-desc">Nullify fan block pushback. Move freely regardless of wind.</div></div></div>
+    <div class="feat-card reveal"><div class="feat-icon" style="background:rgba(245,158,11,.1);color:var(--y)"><i class="fas fa-triangle-exclamation"></i></div><div><div class="feat-name">Anti Trap</div><div class="feat-desc">Walk through and ignore all player-set traps on the server.</div></div></div>
+    <div class="feat-card reveal"><div class="feat-icon" style="background:rgba(99,102,241,.1);color:#818cf8"><i class="fas fa-moon"></i></div><div><div class="feat-name">Anti Darkness</div><div class="feat-desc">Full brightness vision. See through darkness blocks perfectly.</div></div></div>
+    <div class="feat-card reveal"><div class="feat-icon" style="background:rgba(236,72,153,.1);color:var(--pk)"><i class="fas fa-retweet"></i></div><div><div class="feat-name">Anti Deflector</div><div class="feat-desc">Blocks are deflected back. Your attacks always land on target.</div></div></div>
+    <div class="feat-card reveal"><div class="feat-icon" style="background:rgba(16,185,129,.1);color:var(--g)"><i class="fas fa-forward-fast"></i></div><div><div class="feat-name">Speed Hacks</div><div class="feat-desc">Move at custom speeds. Walk, sprint or fly across the map instantly.</div></div></div>
+    <div class="feat-card reveal"><div class="feat-icon" style="background:rgba(168,85,247,.1);color:var(--p)"><i class="fas fa-arrow-up-from-bracket"></i></div><div><div class="feat-name">Jump &amp; Gravity Hacks</div><div class="feat-desc">Control jump height and gravity. Float, fly or slam into any area.</div></div></div>
+    <div class="feat-card reveal"><div class="feat-icon" style="background:rgba(6,182,212,.1);color:var(--c)"><i class="fas fa-eye"></i></div><div><div class="feat-name">ESP — Players &amp; Monsters</div><div class="feat-desc">See all players and monsters through walls with name tags and HP.</div></div></div>
+    <div class="feat-card reveal"><div class="feat-icon" style="background:rgba(245,158,11,.1);color:var(--y)"><i class="fas fa-gift"></i></div><div><div class="feat-name">ESP — Collectables &amp; Giftboxes</div><div class="feat-desc">Highlight all collectables and giftboxes on screen. Never miss a drop.</div></div></div>
+    <div class="feat-card reveal"><div class="feat-icon" style="background:rgba(16,185,129,.1);color:var(--g)"><i class="fas fa-gem"></i></div><div><div class="feat-name">ESP — Gemstones</div><div class="feat-desc">Spot rare gemstones from anywhere on the map instantly.</div></div></div>
+    <div class="feat-card reveal"><div class="feat-icon" style="background:rgba(239,68,68,.1);color:#ef4444"><i class="fas fa-fish"></i></div><div><div class="feat-name">Auto Fishing</div><div class="feat-desc">Automatically cast, hook and collect fish. AFK farm tokens 24/7.</div></div></div>
+    <div class="feat-card reveal"><div class="feat-icon" style="background:rgba(168,85,247,.1);color:var(--p)"><i class="fas fa-hammer"></i></div><div><div class="feat-name">Auto Mining</div><div class="feat-desc">Auto break blocks and collect resources without manual input.</div></div></div>
+    <div class="feat-card reveal"><div class="feat-icon" style="background:rgba(236,72,153,.1);color:var(--pk)"><i class="fas fa-fire-flame-curved"></i></div><div><div class="feat-name">Auto Nether</div><div class="feat-desc">Automatically farm the Nether dimension for rare materials.</div></div></div>
+  </div>
+</section>
+
+<!-- PRICING -->
+<section id="pricing">
+  <div class="reveal" style="text-align:center">
+    <div class="sec-lbl">💎 Pricing</div>
+    <h2 class="sec-title">Choose Your Plan</h2>
+    <p class="sec-sub" style="margin:0 auto">All plans are purchased using <strong style="color:var(--p)">Vlone Token (VT)</strong>. Top up VT via BGL, Crypto, or Card.</p>
+  </div>
+  <div class="pricing-grid">
+
+    <!-- DAILY -->
+    <div class="plan reveal">
+      <div class="plan-glow" style="background:var(--c)"></div>
+      <div class="plan-name">Daily</div>
+      <div class="plan-price grad">10</div>
+      <div class="plan-unit"><span style="color:var(--p);font-weight:700">VT</span> / Day <span style="font-size:10px;color:var(--t2)">≈ 0.27 BGL</span></div>
+      <div class="plan-features">
+        <div class="pf"><i class="fas fa-check"></i>All 14 features</div>
+        <div class="pf"><i class="fas fa-check"></i>24h access</div>
+        <div class="pf"><i class="fas fa-check"></i>Instant activation</div>
+        <div class="pf"><i class="fas fa-check"></i>Basic support</div>
+        <div class="pf" style="color:rgba(148,163,184,.4)"><i class="fas fa-times" style="color:rgba(148,163,184,.3)"></i>Priority support</div>
+      </div>
+      <button id="trial-btn" class="plan-btn plan-btn-out" onclick="location.href='auth.html?signup'"><i class="fas fa-gift"></i> Get 1 Day Trial</button>
+    </div>
+
+    <!-- MONTHLY -->
+    <div class="plan hot reveal">
+      <div class="plan-glow" style="background:var(--p)"></div>
+      <div class="plan-badge">⭐ MOST POPULAR</div>
+      <div class="plan-name">Monthly</div>
+      <div class="plan-price grad">299</div>
+      <div class="plan-unit"><span style="color:var(--p);font-weight:700">VT</span> / Month <span style="font-size:10px;color:var(--g)">≈ 8 BGL</span></div>
+      <div class="plan-features">
+        <div class="pf"><i class="fas fa-check"></i>All 14 features</div>
+        <div class="pf"><i class="fas fa-check"></i>30 days access</div>
+        <div class="pf"><i class="fas fa-check"></i>Instant activation</div>
+        <div class="pf"><i class="fas fa-check"></i>Priority support</div>
+        <div class="pf" style="color:var(--g)"><i class="fas fa-check"></i>Save vs Daily</div>
+      </div>
+      <button id="monthly-btn" class="plan-btn plan-btn-main" onclick="sOpenPlan('monthly')"><i class="fas fa-coins"></i> Buy 299 VT</button>
+    </div>
+
+    <!-- LIFETIME -->
+    <div class="plan reveal">
+      <div class="plan-glow" style="background:var(--pk)"></div>
+      <div class="plan-badge" style="background:linear-gradient(135deg,#be185d,#ec4899)">👑 BEST VALUE</div>
+      <div class="plan-name">Lifetime</div>
+      <div class="plan-price" style="background:linear-gradient(135deg,#ec4899,#f59e0b);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent">499</div>
+      <div class="plan-unit"><span style="color:var(--p);font-weight:700">VT</span> — One Time <span style="font-size:10px;color:var(--g)">≈ 13 BGL</span></div>
+      <div class="plan-features">
+        <div class="pf"><i class="fas fa-check"></i>All 14 features</div>
+        <div class="pf"><i class="fas fa-check"></i>Lifetime access</div>
+        <div class="pf"><i class="fas fa-check"></i>All future updates</div>
+        <div class="pf"><i class="fas fa-check"></i>VIP priority support</div>
+        <div class="pf" style="color:var(--g)"><i class="fas fa-check"></i>Never pay again</div>
+      </div>
+      <button id="lifetime-btn" class="plan-btn" style="background:linear-gradient(135deg,#be185d,#ec4899);color:#fff;box-shadow:0 0 20px rgba(236,72,153,.3)" onclick="sOpenPlan('lifetime')"><i class="fas fa-crown"></i> Buy 499 VT</button>
+    </div>
+
+  </div>
+
+  <!-- VTOKEN INFO -->
+  <div class="token-box reveal">
+    <div class="token-icon">🪙</div>
+    <div class="token-text">
+      <h3>What is Vlone Token (VT)?</h3>
+      <p>VT is VLONE's in-store currency. <strong style="color:var(--t1)">1 BGL ≈ 37 VT</strong>. Top up VT on your profile page, then use it to purchase a plan. Payments accepted via BGL (Growtopia), Crypto, or Credit Card.</p>
+    </div>
+    <div class="token-methods">
+      <div class="pay-method" style="color:#10b981;border-color:rgba(16,185,129,.3)"><i class="fas fa-seedling"></i> BGL (Growtopia)</div>
+      <div class="pay-method" style="color:#f59e0b;border-color:rgba(245,158,11,.3)"><i class="fab fa-bitcoin"></i> Crypto</div>
+      <div class="pay-method" style="color:#06b6d4;border-color:rgba(6,182,212,.3)"><i class="fas fa-credit-card"></i> Card</div>
+    </div>
+  </div>
+</section>
+
+<!-- STATUS -->
+<section id="status" style="background:var(--bg2)">
+  <div class="reveal" style="text-align:center;margin-bottom:30px">
+    <div class="sec-lbl">🟢 Live Status</div>
+    <h2 class="sec-title">System Status</h2>
+  </div>
+  <div style="max-width:700px;margin:0 auto">
+    <div class="status-bar reveal">
+      <div class="sdot"></div>
+      <div>
+        <div style="font-family:'Orbitron',monospace;font-size:14px;font-weight:700;color:var(--g)">VLONE PixelWorlds Cheat v3.1</div>
+        <div style="margin-top:4px;font-size:12px;color:var(--t2)">All features operational — Last tested 2 hours ago</div>
+      </div>
+      <div style="margin-left:auto;font-size:11px;color:var(--t2)"><i class="fas fa-clock" style="color:var(--g)"></i> Updated hourly</div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(auto-fill,minmax(200px,1fr));gap:12px;margin-top:12px">
+      <div class="feat-card reveal" style="padding:14px 16px"><div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--g);animation:pulse 2s infinite"></div><div><div style="font-size:12.5px;font-weight:600">God Mode</div><div style="font-size:11px;color:var(--g)">WORKING</div></div></div></div>
+      <div class="feat-card reveal" style="padding:14px 16px"><div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--g);animation:pulse 2s infinite"></div><div><div style="font-size:12.5px;font-weight:600">Anti Hacks</div><div style="font-size:11px;color:var(--g)">WORKING</div></div></div></div>
+      <div class="feat-card reveal" style="padding:14px 16px"><div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--g);animation:pulse 2s infinite"></div><div><div style="font-size:12.5px;font-weight:600">ESP System</div><div style="font-size:11px;color:var(--g)">WORKING</div></div></div></div>
+      <div class="feat-card reveal" style="padding:14px 16px"><div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--g);animation:pulse 2s infinite"></div><div><div style="font-size:12.5px;font-weight:600">Auto Farming</div><div style="font-size:11px;color:var(--g)">WORKING</div></div></div></div>
+      <div class="feat-card reveal" style="padding:14px 16px"><div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--g);animation:pulse 2s infinite"></div><div><div style="font-size:12.5px;font-weight:600">Speed &amp; Jump</div><div style="font-size:11px;color:var(--g)">WORKING</div></div></div></div>
+      <div class="feat-card reveal" style="padding:14px 16px"><div style="display:flex;align-items:center;gap:10px"><div style="width:8px;height:8px;border-radius:50%;background:var(--g);animation:pulse 2s infinite"></div><div><div style="font-size:12.5px;font-weight:600">Auto Nether</div><div style="font-size:11px;color:var(--g)">WORKING</div></div></div></div>
+    </div>
+  </div>
+</section>
+
+<!-- HOW -->
+<section id="how">
+  <div class="reveal" style="text-align:center;margin-bottom:0">
+    <div class="sec-lbl">⚡ Quick Start</div>
+    <h2 class="sec-title">How To Get Started</h2>
+  </div>
+  <div class="how-grid">
+    <div class="how-card reveal"><div class="how-n">1</div><div class="how-i"><i class="fas fa-key"></i></div><div class="how-t">Choose Plan</div><div class="how-d">Pick Daily, Monthly, or Lifetime. All plans include every feature.</div></div>
+    <div class="how-card reveal"><div class="how-n">2</div><div class="how-i"><i class="fas fa-coins"></i></div><div class="how-t">Pay With Tokens</div><div class="how-d">Send BGL in Growtopia, or pay via Crypto/Card. Instant confirmation.</div></div>
+    <div class="how-card reveal"><div class="how-n">3</div><div class="how-i"><i class="fas fa-download"></i></div><div class="how-t">Download Loader</div><div class="how-d">Get our secure loader app. Enter your key and connect your account.</div></div>
+    <div class="how-card reveal"><div class="how-n">4</div><div class="how-i"><i class="fas fa-trophy"></i></div><div class="how-t">Dominate</div><div class="how-d">Launch PixelWorlds and activate any feature with a single click.</div></div>
+  </div>
+</section>
+
+<!-- REVIEWS -->
+<section id="reviews" style="background:var(--bg2)">
+  <div class="reveal" style="text-align:center;margin-bottom:0">
+    <div class="sec-lbl">⭐ Reviews</div>
+    <h2 class="sec-title">Player Testimonials</h2>
+  </div>
+  <div class="rev-grid">
+    <div class="rev-card reveal"><div class="stars">★★★★★</div><div class="rev-text">"God Mode is insane. Been using for 3 months, zero bans. ESP makes farming SO easy. 100% worth the tokens."</div><div class="rev-user"><div class="rev-av" style="background:linear-gradient(135deg,#a855f7,#7c3aed)">xG</div><div><div class="rev-name">xGhost99</div><div class="rev-tag">Lifetime Member</div></div></div></div>
+    <div class="rev-card reveal"><div class="stars">★★★★★</div><div class="rev-text">"Auto Fishing is broken lmao. Made 500 BGL in 2 days just AFKing. Best investment I've made in PW."</div><div class="rev-user"><div class="rev-av" style="background:linear-gradient(135deg,#06b6d4,#0891b2)">SB</div><div><div class="rev-name">ShadowByte</div><div class="rev-tag">Monthly Member</div></div></div></div>
+    <div class="rev-card reveal"><div class="stars">★★★★★</div><div class="rev-text">"Speed Hack + Jump Hack together is ridiculous. Got the Lifetime plan and never looked back. Support is 🔥"</div><div class="rev-user"><div class="rev-av" style="background:linear-gradient(135deg,#ec4899,#be185d)">NX</div><div><div class="rev-name">NightX</div><div class="rev-tag">Lifetime Member</div></div></div></div>
+    <div class="rev-card reveal"><div class="stars">★★★★☆</div><div class="rev-text">"Anti Trap and Anti Darkness are my favorites. No more getting owned by trolls in public worlds. gg."</div><div class="rev-user"><div class="rev-av" style="background:linear-gradient(135deg,#f59e0b,#d97706)">DK</div><div><div class="rev-name">DarkKnight</div><div class="rev-tag">Monthly Member</div></div></div></div>
+    <div class="rev-card reveal"><div class="stars">★★★★★</div><div class="rev-text">"Gemstone ESP found me 3 Legendary gems in one session. Auto Mining does the rest. Easiest DLS ever."</div><div class="rev-user"><div class="rev-av" style="background:linear-gradient(135deg,#10b981,#059669)">GF</div><div><div class="rev-name">GhostFrag</div><div class="rev-tag">Lifetime Member</div></div></div></div>
+    <div class="rev-card reveal"><div class="stars">★★★★★</div><div class="rev-text">"Setup took 5 minutes. Team helped me on Discord instantly. Auto Nether runs 24/7 on my alt. Crazy profits."</div><div class="rev-user"><div class="rev-av" style="background:linear-gradient(135deg,#7c3aed,#6d28d9)">ZR</div><div><div class="rev-name">ZeroRisk</div><div class="rev-tag">Lifetime Member</div></div></div></div>
+  </div>
+</section>
+
+<!-- CTA -->
+<section>
+  <div class="cta-box reveal">
+    <div class="fo1"></div><div class="fo2"></div>
+    <h2>Start <span class="grad">Dominating</span> Now</h2>
+    <p>From just 10 Tokens a day. Get instant access and start winning in PixelWorlds today.</p>
+    <div class="cta-btns">
+      <a href="#pricing" class="btn bg" style="padding:13px 28px;font-size:15px"><i class="fas fa-key"></i> Get Access Now</a>
+      <a href="#" class="btn bo" style="padding:13px 28px;font-size:15px"><i class="fab fa-discord"></i> Join Discord</a>
+    </div>
+  </div>
+</section>
+
+<!-- FOOTER -->
+<footer>
+  <div class="ft">
+    <div><div class="fl">VLONE</div><div class="fd">The #1 cheat provider for PixelWorlds. Premium quality, undetected, instant delivery. Powered by the community.</div></div>
+    <div><div class="fh">Navigation</div><ul class="flinks"><li><a href="#features">Features</a></li><li><a href="#pricing">Pricing</a></li><li><a href="#status">Status</a></li><li><a href="#reviews">Reviews</a></li></ul></div>
+    <div><div class="fh">Support</div><ul class="flinks"><li><a href="#">Discord</a></li><li><a href="#">Telegram</a></li><li><a href="#">FAQ</a></li><li><a href="#">Terms of Service</a></li></ul></div>
+  </div>
+  <div class="fb">
+    <div class="fc">© 2026 VLONE Cheats. All rights reserved. For educational purposes only.</div>
+    <div class="soc"><a href="#" class="sb"><i class="fab fa-discord"></i></a><a href="#" class="sb"><i class="fab fa-telegram"></i></a><a href="#" class="sb"><i class="fab fa-youtube"></i></a></div>
+  </div>
+</footer>
+
+</div><!-- /z -->
+
+<!-- ══════════════════════════════════════
+     OLD BGL/CRYPTO/CARD MODAL (kept)
+══════════════════════════════════════ -->
+<div id="modal">
+  <div class="modal-box">
+    <button class="modal-close" onclick="closeModal()">✕</button>
+    <div style="text-align:center;margin-bottom:22px">
+      <div style="font-size:36px;margin-bottom:10px">🔑</div>
+      <div id="mName" style="font-family:Orbitron,monospace;font-size:17px;font-weight:700;margin-bottom:4px"></div>
+      <div id="mPrice" style="font-family:Orbitron,monospace;font-size:24px;font-weight:900;background:linear-gradient(135deg,#a855f7,#06b6d4);-webkit-background-clip:text;-webkit-text-fill-color:transparent"></div>
+    </div>
+    <div style="font-size:12px;color:var(--t2);margin-bottom:14px;font-weight:600;text-transform:uppercase;letter-spacing:1px">Choose Payment Method</div>
+    <div class="pay-tabs">
+      <button class="pay-tab act" onclick="setTab(this,'bgl')"><i class="fas fa-seedling"></i> BGL (Growtopia)</button>
+      <button class="pay-tab" onclick="setTab(this,'crypto')"><i class="fab fa-bitcoin"></i> Crypto</button>
+      <button class="pay-tab" onclick="setTab(this,'card')"><i class="fas fa-credit-card"></i> Card</button>
+    </div>
+    <div class="pay-content show" id="tab-bgl">
+      <div class="pay-note">Send the amount in BGL to our Growtopia account: <strong>VLONEAdmin</strong>. Include your Discord username in the message.</div>
+      <input class="pay-input" placeholder="Your Discord username (e.g. xGhost#1234)"/>
+      <input class="pay-input" placeholder="Your PixelWorlds username"/>
+      <button class="plan-btn plan-btn-main" style="width:100%;padding:12px">Confirm BGL Payment</button>
+    </div>
+    <div class="pay-content" id="tab-crypto">
+      <div class="pay-note">Send USDT (TRC20) or BTC to our wallet. After payment, enter your transaction hash below.</div>
+      <input class="pay-input" placeholder="Transaction Hash / TX ID"/>
+      <input class="pay-input" placeholder="Your Discord username"/>
+      <button class="plan-btn plan-btn-main" style="width:100%;padding:12px">Verify Crypto Payment</button>
+    </div>
+    <div class="pay-content" id="tab-card">
+      <div class="pay-note">Secure card payment via our trusted processor. You'll be redirected to complete checkout safely.</div>
+      <button class="plan-btn plan-btn-main" style="width:100%;padding:12px;margin-bottom:8px"><i class="fas fa-lock"></i> Proceed to Checkout</button>
+      <div style="text-align:center;font-size:11px;color:var(--t2)"><i class="fas fa-shield-halved" style="color:var(--g)"></i> SSL Secured — We never store card data</div>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     LICENSE CHOICE MODAL (Extend vs New)
+══════════════════════════════════════ -->
+<div class="lc-modal" id="s-lc-modal" onclick="if(event.target===this)sCloseLicenseChoice()">
+  <div class="lc-box">
+    <div style="text-align:center;margin-bottom:22px">
+      <div style="font-size:40px;margin-bottom:10px">⚠️</div>
+      <h2 style="font-family:'Orbitron',monospace;font-size:16px;margin-bottom:8px">Active License Detected</h2>
+      <p style="color:var(--t2);font-size:13px;line-height:1.55" id="s-lc-desc">You already have an active license.<br>What would you like to do?</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <button id="s-lc-extend-btn" onclick="sExecLicenseChoice('extend')"
+        style="background:rgba(168,85,247,.1);border:1.5px solid rgba(168,85,247,.3);border-radius:12px;padding:16px;text-align:left;cursor:pointer;transition:.2s;color:var(--t1);font-family:inherit"
+        onmouseover="if(!this.disabled)this.style.background='rgba(168,85,247,.18)'"
+        onmouseout="if(!this.disabled)this.style.background='rgba(168,85,247,.1)'">
+        <div style="font-weight:700;font-size:14px;margin-bottom:5px"><i class="fas fa-clock-rotate-left" style="color:var(--p);margin-right:7px"></i>Extend Existing License</div>
+        <div style="font-size:12px;color:var(--t2)" id="s-lc-extend-desc">Add time to your current license. Same key.</div>
+      </button>
+      <button id="s-lc-new-btn" onclick="sExecLicenseChoice('new')"
+        style="background:rgba(16,185,129,.07);border:1.5px solid rgba(16,185,129,.2);border-radius:12px;padding:16px;text-align:left;cursor:pointer;transition:.2s;color:var(--t1);font-family:inherit"
+        onmouseover="if(!this.disabled)this.style.background='rgba(16,185,129,.14)'"
+        onmouseout="if(!this.disabled)this.style.background='rgba(16,185,129,.07)'">
+        <div style="font-weight:700;font-size:14px;margin-bottom:5px"><i class="fas fa-key" style="color:var(--g);margin-right:7px"></i>Create New License</div>
+        <div style="font-size:12px;color:var(--t2)">Get a brand-new license key. Both licenses will be active.</div>
+      </button>
+    </div>
+    <div style="text-align:center;margin-top:16px">
+      <button onclick="sCloseLicenseChoice()" style="background:none;border:none;color:var(--t2);font-size:12px;cursor:pointer;font-family:inherit"><i class="fas fa-arrow-left"></i> Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     PLAN PURCHASE MODAL
+══════════════════════════════════════ -->
+<div class="pmb" id="s-plan-modal" onclick="if(event.target===this)sClosePlan()">
+  <div class="pm" id="s-plan-inner">
+    <button class="pm-close" onclick="sClosePlan()"><i class="fas fa-xmark"></i></button>
+
+    <div style="text-align:center;margin-bottom:22px">
+      <div style="width:52px;height:52px;border-radius:14px;background:linear-gradient(135deg,#7c3aed,#0e7490);display:flex;align-items:center;justify-content:center;font-size:22px;margin:0 auto 12px;box-shadow:0 0 22px rgba(168,85,247,.4)">&#128273;</div>
+      <h2 id="s-pm-title" style="font-family:'Orbitron',monospace;font-size:17px;font-weight:700;margin-bottom:4px">Purchase Monthly Plan</h2>
+      <p style="font-size:13px;color:rgba(148,163,184,.7);margin:0">Review your order and confirm below</p>
+    </div>
+
+    <div style="background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.15);border-radius:12px;padding:16px 18px;margin-bottom:16px">
+      <div class="pm-row"><span class="pm-lbl">Plan</span><span style="font-weight:700;font-size:14px" id="s-pm-plan">Monthly</span></div>
+      <div class="pm-row"><span class="pm-lbl">Price</span><span style="font-weight:700;color:#a855f7;font-size:15px;font-family:'Orbitron',monospace" id="s-pm-price">299 VT</span></div>
+      <div class="pm-row"><span class="pm-lbl">Your Balance</span><span style="font-weight:600;font-size:13px" id="s-pm-bal">0 VT</span></div>
+      <div style="border-top:1px solid rgba(168,85,247,.12);padding-top:12px" class="pm-row">
+        <span class="pm-lbl">After Purchase</span>
+        <span style="font-weight:700;font-size:14px;color:#10b981" id="s-pm-after">0 VT</span>
+      </div>
+    </div>
+
+    <div class="pm-note"><i class="fas fa-bolt"></i><span>Your plan activates <strong>instantly</strong> after confirming. Your license key will be shown on the next screen.</span></div>
+    <div class="pm-err" id="s-pm-err"></div>
+
+    <button class="pm-btn" id="s-pm-btn" onclick="sConfirmPlan()">
+      <i class="fas fa-circle-check"></i> CONFIRM PURCHASE
+    </button>
+    <div style="text-align:center;margin-top:12px">
+      <a href="profile.html" style="color:#a855f7;font-size:12px;text-decoration:none"><i class="fas fa-coins"></i> Need VTokens? Go to profile</a>
+    </div>
+  </div>
+</div>
+
+<!-- TOAST -->
+<div id="s-toast" style="position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);border-radius:10px;padding:10px 24px;font-size:13px;font-weight:600;color:#6ee7b7;z-index:1200;display:none;backdrop-filter:blur(10px)"></div>
+
+<script src="js/store.js"></script>
+</body>
+</html>

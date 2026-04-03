@@ -1,0 +1,334 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8"/>
+<meta name="viewport" content="width=device-width,initial-scale=1"/>
+<title>VLONE — My Profile</title>
+<link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet"/>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css"/>
+<link rel="stylesheet" href="css/profile.css"/>
+<script type="module">
+import { createClient } from 'https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm'
+window._sb = createClient(
+  'https://eyqvcsfebrwsemiwkajg.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImV5cXZjc2ZlYnJ3c2VtaXdrYWpnIiwicm9sZSI6ImFub24iLCJpYXQiOjE3NzUxNTEwMjksImV4cCI6MjA5MDcyNzAyOX0.CJMJNWK4n6pRq-wD_JkXOuoC1k55YnZzRE77qGWrqpQ'
+)
+</script>
+</head>
+<body>
+<canvas id="cv"></canvas>
+
+<!-- NAV -->
+<nav>
+  <a class="logo" href="store.html">VLONE</a>
+  <div class="nav-r">
+    <a href="store.html" class="btn btn-out"><i class="fas fa-store"></i> Store</a>
+    <button class="btn btn-danger" onclick="doLogout()"><i class="fas fa-right-from-bracket"></i> Logout</button>
+  </div>
+</nav>
+
+<!-- MAIN -->
+<div class="page z">
+
+  <!-- LOADING -->
+  <div id="loading-state" class="loading-state">
+    <div class="spin"></div>
+    <div style="font-size:14px">Loading profile...</div>
+  </div>
+
+  <!-- CONTENT -->
+  <div id="prof-content" style="display:none">
+
+    <!-- HEADER -->
+    <div class="prof-header">
+      <div class="avatar" id="prof-avatar">?</div>
+      <div class="prof-meta">
+        <h1 id="prof-name">—</h1>
+        <div class="em" id="prof-email">—</div>
+        <div class="badges">
+          <div id="prof-badge" class="badge b-none"><i class="fas fa-circle-dot"></i> No Plan</div>
+          <div class="badge b-none" id="join-badge"><i class="fas fa-calendar"></i> Member</div>
+        </div>
+      </div>
+
+      <!-- VTOKEN WIDGET -->
+      <div class="vt-widget">
+        <div class="vt-balance">
+          <div class="vt-icon"><i class="fas fa-coins"></i></div>
+          <div>
+            <div class="vt-lbl">Vlone Token</div>
+            <div class="vt-num" id="vt-num">0 <span style="font-size:12px;color:var(--t2)">VT</span></div>
+          </div>
+        </div>
+        <button class="vt-buy" id="vt-action-btn" onclick="openVTModal()">
+          <i class="fas fa-plus-circle"></i> Buy VTokens
+        </button>
+      </div>
+    </div>
+
+    <!-- ZERO VT NOTICE -->
+    <div id="vt-notice" style="display:none;animation:fU .5s ease both">
+      <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:14px;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:20px;flex-wrap:wrap">
+        <div style="display:flex;align-items:center;gap:12px">
+          <i class="fas fa-wallet" style="font-size:22px;color:var(--y)"></i>
+          <div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:2px">Your VToken balance is 0!</div>
+            <div style="font-size:12px;color:var(--t2)">Buy VTokens to unlock a plan or extend your access</div>
+          </div>
+        </div>
+        <button class="btn btn-grad" onclick="openVTModal()"><i class="fas fa-coins"></i> Buy VTokens</button>
+      </div>
+    </div>
+
+    <!-- GRID -->
+    <div class="grid">
+
+      <!-- SUBSCRIPTION -->
+      <div class="card" style="animation-delay:.04s">
+        <div class="card-title"><i class="fas fa-crown"></i> Subscription</div>
+        <!-- sub-plan kept hidden for JS compat; actual content injected by JS below it -->
+        <div id="sub-plan" style="display:none"></div>
+        <!-- JS injects per-sub cards after sub-plan via data-sub-list container -->
+        <div id="sub-exp" style="color:var(--t2);font-size:13px;margin-bottom:10px">No active plan</div>
+        <div class="bar-wrap"><div class="bar" id="sub-bar" style="width:0%"></div></div>
+        <div class="bar-label">
+          <span id="bar-left">—</span>
+          <span id="bar-right"></span>
+        </div>
+      </div>
+
+      <!-- ACCOUNT INFO -->
+      <div class="card" style="animation-delay:.08s">
+        <div class="card-title"><i class="fas fa-user-circle"></i> Account Info</div>
+        <div class="stat-row">
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-at"></i></div>
+            <div><div class="stat-lbl">Username</div><div class="stat-val" id="info-user">—</div></div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-gamepad"></i></div>
+            <div><div class="stat-lbl">PixelWorlds IGN</div><div class="stat-val" id="info-pw">—</div></div>
+          </div>
+          <div class="stat-item">
+            <div class="stat-icon"><i class="fas fa-calendar-plus"></i></div>
+            <div><div class="stat-lbl">Member Since</div><div class="stat-val" id="info-date">—</div></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- MANAGE KEYS -->
+      <div class="card" style="animation-delay:.12s">
+        <div class="card-title"><i class="fas fa-key"></i> Manage Keys</div>
+        <div id="keys-content">
+          <div class="no-plan-notice">
+            <i class="fas fa-lock"></i>
+            Activate a plan to get your license key
+          </div>
+        </div>
+      </div>
+
+      <!-- MANAGE BOTS -->
+      <div class="card" style="animation-delay:.16s">
+        <div class="card-title"><i class="fas fa-robot"></i> Manage Bots</div>
+        <div id="bots-content">
+          <div class="no-plan-notice">
+            <i class="fas fa-robot"></i>
+            Activate a plan to use bots
+          </div>
+        </div>
+      </div>
+
+    </div><!-- /grid -->
+
+    <!-- UPGRADE BANNER -->
+    <div class="upgrade-banner" id="upgrade-banner" style="display:none">
+      <div class="upgrade-text">
+        <h3>🚀 Upgrade to Lifetime</h3>
+        <p>499 VT — Pay once, play forever. ≈ 13 BGL / ~$5</p>
+      </div>
+      <button class="btn btn-grad" onclick="openVTModal()"><i class="fas fa-crown"></i> Upgrade Now</button>
+    </div>
+
+    <!-- DANGER ZONE -->
+    <div class="card danger-zone" style="animation-delay:.22s">
+      <div class="card-title"><i class="fas fa-triangle-exclamation"></i> Danger Zone</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;flex-wrap:wrap;gap:12px">
+        <div>
+          <div style="font-size:13px;font-weight:600;margin-bottom:3px">Logout from all devices</div>
+          <div style="font-size:12px;color:var(--t2)">Your session will be deleted and you'll need to log in again</div>
+        </div>
+        <button class="btn btn-danger" onclick="doLogout()"><i class="fas fa-right-from-bracket"></i> Logout</button>
+      </div>
+    </div>
+
+  </div><!-- /prof-content -->
+</div>
+
+<!-- ══════════════════════════════════════
+     LICENSE CHOICE MODAL (Extend vs New)
+══════════════════════════════════════ -->
+<div class="modal-bg" id="license-choice-modal" onclick="if(event.target===this)closeLicenseChoiceModal()">
+  <div class="modal" style="max-width:420px">
+    <button class="modal-close" onclick="closeLicenseChoiceModal()"><i class="fas fa-xmark"></i></button>
+    <div style="text-align:center;margin-bottom:22px">
+      <div style="font-size:40px;margin-bottom:10px">⚠️</div>
+      <h2 style="font-size:16px;margin-bottom:8px" id="lc-title">Active License Detected</h2>
+      <p style="color:var(--t2);font-size:13px;line-height:1.55" id="lc-desc">You already have an active license.<br>What would you like to do?</p>
+    </div>
+    <div style="display:flex;flex-direction:column;gap:12px">
+      <button id="lc-extend-btn" onclick="execLicenseChoice('extend')"
+        style="background:rgba(168,85,247,.1);border:1.5px solid rgba(168,85,247,.3);border-radius:12px;padding:16px;text-align:left;cursor:pointer;transition:.2s;color:var(--t1);font-family:inherit"
+        onmouseover="if(!this.disabled)this.style.background='rgba(168,85,247,.18)'"
+        onmouseout="if(!this.disabled)this.style.background='rgba(168,85,247,.1)'">
+        <div style="font-weight:700;font-size:14px;margin-bottom:5px"><i class="fas fa-clock-rotate-left" style="color:var(--p);margin-right:7px"></i>Extend Existing License</div>
+        <div style="font-size:12px;color:var(--t2)" id="lc-extend-desc">Add time to your current license. Same key.</div>
+      </button>
+      <button id="lc-new-btn" onclick="execLicenseChoice('new')"
+        style="background:rgba(16,185,129,.07);border:1.5px solid rgba(16,185,129,.2);border-radius:12px;padding:16px;text-align:left;cursor:pointer;transition:.2s;color:var(--t1);font-family:inherit"
+        onmouseover="if(!this.disabled)this.style.background='rgba(16,185,129,.14)'"
+        onmouseout="if(!this.disabled)this.style.background='rgba(16,185,129,.07)'">
+        <div style="font-weight:700;font-size:14px;margin-bottom:5px"><i class="fas fa-key" style="color:var(--g);margin-right:7px"></i>Create New License</div>
+        <div style="font-size:12px;color:var(--t2)">Get a brand-new license key. Both licenses will be active in Manage Keys.</div>
+      </button>
+    </div>
+    <div style="text-align:center;margin-top:16px">
+      <button onclick="closeLicenseChoiceModal()" style="background:none;border:none;color:var(--t2);font-size:12px;cursor:pointer;font-family:inherit"><i class="fas fa-arrow-left"></i> Cancel</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     BUY PLAN MODAL
+══════════════════════════════════════ -->
+<div class="modal-bg" id="plan-modal" onclick="if(event.target===this)closePlanModal()">
+  <div class="modal" id="plan-modal-inner">
+    <button class="modal-close" onclick="closePlanModal()"><i class="fas fa-xmark"></i></button>
+
+    <div style="text-align:center;margin-bottom:22px">
+      <div style="width:56px;height:56px;border-radius:16px;background:var(--gm);display:flex;align-items:center;justify-content:center;font-size:24px;margin:0 auto 12px;box-shadow:0 0 24px rgba(168,85,247,.4)">&#128273;</div>
+      <h2 id="pm-title" style="font-size:17px">Purchase Monthly Plan</h2>
+      <div class="modal-sub" style="margin-top:4px;margin-bottom:0">Review your order and confirm below</div>
+    </div>
+
+    <div style="background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.15);border-radius:12px;padding:16px 18px;margin-bottom:16px">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
+        <span style="color:var(--t2);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Plan</span>
+        <span style="font-weight:700;font-size:14px" id="pm-plan">Monthly</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
+        <span style="color:var(--t2);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Price</span>
+        <span style="font-weight:700;color:var(--p);font-size:15px;font-family:'Orbitron',monospace" id="pm-price">299 VT</span>
+      </div>
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
+        <span style="color:var(--t2);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Your Balance</span>
+        <span style="font-weight:600;font-size:13px" id="pm-balance">0 VT</span>
+      </div>
+      <div style="border-top:1px solid rgba(168,85,247,.12);padding-top:12px;display:flex;justify-content:space-between;align-items:center">
+        <span style="color:var(--t2);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">After Purchase</span>
+        <span style="font-weight:700;font-size:14px;color:var(--g)" id="pm-after">0 VT</span>
+      </div>
+    </div>
+
+    <div class="modal-note" style="margin-bottom:16px">
+      <i class="fas fa-bolt"></i>
+      Your plan activates <strong>instantly</strong> after confirming. Your license key will be displayed on the next screen.
+    </div>
+
+    <div id="pm-error" style="display:none;background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 14px;font-size:12px;color:#fca5a5;margin-bottom:14px;text-align:center"></div>
+
+    <button class="submit-btn" id="pm-confirm-btn" onclick="confirmPlanPurchase()">
+      <i class="fas fa-circle-check"></i> CONFIRM PURCHASE
+    </button>
+
+    <div style="text-align:center;margin-top:12px">
+      <button onclick="closePlanModal();openVTModal()" style="background:none;border:none;color:var(--p);font-size:12px;cursor:pointer;font-family:inherit"><i class="fas fa-coins"></i> Need more VTokens? Buy here</button>
+    </div>
+  </div>
+</div>
+
+<!-- ══════════════════════════════════════
+     VTOKEN BUY MODAL
+══════════════════════════════════════ -->
+<div class="modal-bg" id="vt-modal" onclick="if(event.target===this)closeVTModal()">
+  <div class="modal">
+    <button class="modal-close" onclick="closeVTModal()"><i class="fas fa-xmark"></i></button>
+    <h2><i class="fas fa-coins" style="color:var(--p);font-size:16px;margin-right:8px"></i>Buy Vlone Token</h2>
+    <div class="modal-sub">1 VToken ≈ 0.027 BGL • 10 VT = 1 day • 299 VT = 1 month • 499 VT = lifetime</div>
+
+    <div class="amt-grid" id="amt-grid">
+      <div class="amt-card sel" data-vt="50"   data-bgl="1.5"><div class="amt-vt">50 VT</div><div class="amt-bgl">≈ 1.5 BGL</div></div>
+      <div class="amt-card"     data-vt="150"  data-bgl="4">  <div class="amt-vt">150 VT</div><div class="amt-bgl">≈ 4 BGL</div><div class="amt-bonus">+10 bonus</div></div>
+      <div class="amt-card"     data-vt="300"  data-bgl="8">  <div class="amt-vt">300 VT</div><div class="amt-bgl">≈ 8 BGL</div><div class="amt-bonus">+30 bonus</div></div>
+      <div class="amt-card"     data-vt="520"  data-bgl="13"> <div class="amt-vt">520 VT</div><div class="amt-bgl">≈ 13 BGL</div><div class="amt-bonus">+50 bonus 🔥</div></div>
+      <div class="amt-card"     data-vt="1100" data-bgl="27"> <div class="amt-vt">1100 VT</div><div class="amt-bgl">≈ 27 BGL</div><div class="amt-bonus">+150 bonus 💎</div></div>
+      <div class="amt-card"     data-vt="2500" data-bgl="60"> <div class="amt-vt">2500 VT</div><div class="amt-bgl">≈ 60 BGL</div><div class="amt-bonus">+400 bonus 👑</div></div>
+    </div>
+
+    <div class="pay-tabs">
+      <button class="pay-tab act" onclick="setVTTab(this,'bgl')"><i class="fas fa-gem"></i> BGL</button>
+      <button class="pay-tab"     onclick="setVTTab(this,'crypto')"><i class="fab fa-bitcoin"></i> Crypto</button>
+      <button class="pay-tab"     onclick="setVTTab(this,'card')"><i class="fas fa-credit-card"></i> Card</button>
+    </div>
+
+    <!-- BGL TAB -->
+    <div class="pay-content show" id="vt-tab-bgl">
+      <div class="pay-field">
+        <div class="pay-label">Send BGL to this GrowID:</div>
+        <div class="pay-val">VLONE_STORE<button class="copy-btn" onclick="copyText('VLONE_STORE')"><i class="fas fa-copy"></i> Copy</button></div>
+      </div>
+      <div class="pay-field">
+        <div class="pay-label">Amount to send: <span id="bgl-amt" style="color:var(--y);font-weight:700">1.5 BGL</span></div>
+      </div>
+      <div class="pay-field">
+        <div class="pay-label">Your GrowID</div>
+        <input class="pay-inp" id="bgl-growid" placeholder="Enter your GrowID..."/>
+      </div>
+    </div>
+
+    <!-- CRYPTO TAB -->
+    <div class="pay-content" id="vt-tab-crypto">
+      <div class="pay-field">
+        <div class="pay-label">Network & wallet address:</div>
+        <div class="pay-val" style="font-family:monospace;font-size:11px">0x742d35Cc6634C0532925a3b8D4C9C4E1C1A8fBa<button class="copy-btn" onclick="copyText('0x742d35Cc6634C0532925a3b8D4C9C4E1C1A8fBa')"><i class="fas fa-copy"></i></button></div>
+      </div>
+      <div class="pay-field">
+        <div class="pay-label">Amount (USDT/BNB equivalent <span id="crypto-amt" style="color:var(--y);font-weight:700">≈ $1.20</span>)</div>
+      </div>
+      <div class="pay-field">
+        <div class="pay-label">Transaction Hash / TxID</div>
+        <input class="pay-inp" id="crypto-txid" placeholder="Paste your transaction hash here..."/>
+      </div>
+    </div>
+
+    <!-- CARD TAB -->
+    <div class="pay-content" id="vt-tab-card">
+      <div class="modal-note" style="margin-bottom:4px">
+        <i class="fas fa-info-circle"></i>
+        Card payments are processed manually. Contact admin on Discord after submitting for faster confirmation.
+      </div>
+      <div class="pay-field">
+        <div class="pay-label">Full cardholder name</div>
+        <input class="pay-inp" id="card-name" placeholder="Full Name"/>
+      </div>
+      <div class="pay-field">
+        <div class="pay-label">Confirmation email</div>
+        <input class="pay-inp" id="card-email" type="email" placeholder="email@example.com"/>
+      </div>
+    </div>
+
+    <div class="modal-note">
+      <i class="fas fa-clock"></i>
+      Tokens are added manually by admin within 5–30 minutes after payment confirmation. Join Discord for faster support.
+    </div>
+
+    <button class="submit-btn" id="vt-submit-btn" onclick="submitVTRequest()">
+      <i class="fas fa-paper-plane"></i> SUBMIT PAYMENT
+    </button>
+  </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script src="js/profile.js"></script>
+</body>
+</html>

@@ -334,6 +334,23 @@ window._sb = createClient(
   </div>
 </div>
 
+<div class="modal-bg" id="slot-confirm-modal" style="z-index:280" onclick="if(event.target===this)closeDeviceSlotConfirmModal()">
+  <div class="modal" style="max-width:340px;padding:22px 24px 20px" onclick="event.stopPropagation()">
+    <button type="button" class="modal-close" onclick="closeDeviceSlotConfirmModal()" aria-label="Close"><i class="fas fa-xmark"></i></button>
+    <div style="text-align:center;margin-bottom:14px">
+      <div style="font-size:28px;margin-bottom:6px">➕</div>
+      <h3 style="font-size:15px;font-family:'Orbitron',monospace;margin:0 0 4px">Extra device slot</h3>
+      <div style="font-size:11px;color:var(--t2)">Confirm purchase</div>
+    </div>
+    <div id="slot-confirm-text" style="font-size:12px;color:var(--t2);line-height:1.55;margin-bottom:12px;text-align:left"></div>
+    <div id="slot-confirm-err" style="display:none;background:rgba(239,68,68,.1);border:1px solid rgba(239,68,68,.25);border-radius:8px;padding:8px 10px;font-size:11px;color:#fca5a5;margin-bottom:12px;text-align:center"></div>
+    <div style="display:flex;gap:10px;justify-content:center;flex-wrap:wrap">
+      <button type="button" onclick="closeDeviceSlotConfirmModal()" style="flex:1;min-width:100px;padding:10px 14px;border-radius:10px;border:1px solid rgba(148,163,184,.25);background:rgba(255,255,255,.04);color:var(--t2);font-size:12px;font-weight:600;cursor:pointer;font-family:inherit">Cancel</button>
+      <button type="button" id="slot-confirm-ok" onclick="confirmPurchaseExtraDeviceSlot()" class="submit-btn" style="flex:1;min-width:100px;margin:0;padding:10px 14px;font-size:12px">Confirm</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="js/profile.js"></script>

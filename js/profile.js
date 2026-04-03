@@ -88,8 +88,51 @@ function linkedDevicesForSubscription(s) {
 }
 
 function closeKeyInfoModal() {
+  closeDeviceSlotConfirmModal();
   const el = document.getElementById('key-info-modal');
   if (el) el.classList.remove('show');
+}
+
+let _slotConfirmSubId = null;
+
+function closeDeviceSlotConfirmModal() {
+  const el = document.getElementById('slot-confirm-modal');
+  if (el) el.classList.remove('show');
+  _slotConfirmSubId = null;
+}
+
+function openDeviceSlotConfirmModal(subId) {
+  _slotConfirmSubId = subId;
+  const after = Math.max(0, _currentVT - DEVICE_SLOT_PRICE);
+  const low = _currentVT < DEVICE_SLOT_PRICE;
+  const tx = document.getElementById('slot-confirm-text');
+  const er = document.getElementById('slot-confirm-err');
+  if (tx) {
+    tx.innerHTML = `Add <strong>1 device slot</strong> for this license.<br><br>
+      Cost: <strong>${DEVICE_SLOT_PRICE} VT</strong><br>
+      Your balance: <strong>${_currentVT} VT</strong><br>
+      After purchase: <strong>${after} VT</strong>`;
+  }
+  if (er) {
+    er.style.display = low ? 'block' : 'none';
+    er.textContent = low ? `You need ${DEVICE_SLOT_PRICE - _currentVT} more VT.` : '';
+  }
+  const okBtn = document.getElementById('slot-confirm-ok');
+  if (okBtn) {
+    okBtn.disabled = !!low;
+    okBtn.style.opacity = low ? '0.45' : '1';
+    okBtn.style.cursor = low ? 'not-allowed' : 'pointer';
+  }
+  const m = document.getElementById('slot-confirm-modal');
+  if (m) m.classList.add('show');
+}
+
+async function confirmPurchaseExtraDeviceSlot() {
+  const id = _slotConfirmSubId;
+  if (!id || !_sbInst) return;
+  if (_currentVT < DEVICE_SLOT_PRICE) return;
+  closeDeviceSlotConfirmModal();
+  await purchaseExtraDeviceSlot(id);
 }
 
 function openKeyInfoModal(subId) {
@@ -143,13 +186,16 @@ function openKeyInfoModal(subId) {
       <div><span style="color:var(--t2)">Plan:</span> <strong>${escHtml(planLbl)}</strong></div>
       <div><span style="color:var(--t2)">Access / expiry:</span> <strong>${escHtml(expLine)}</strong></div>
       <div><span style="color:var(--t2)">Activation count:</span> <strong>${typeof s.device_count === 'number' ? s.device_count : s.hwid ? 1 : 0}</strong></div>
-      <div><span style="color:var(--t2)">Device slots:</span> <strong>${slotUsed} / ${slotMax}</strong> used</div>
+      <div style="display:flex;align-items:center;justify-content:space-between;gap:10px;flex-wrap:wrap">
+        <span><span style="color:var(--t2)">Device slots:</span> <strong>${slotUsed} / ${slotMax}</strong> used</span>
+        <button type="button" class="key-copy" style="font-size:11px" onclick="openDeviceSlotConfirmModal('${s.id}')"><i class="fas fa-plus"></i> Add slot</button>
+      </div>
     </div>
     <div style="font-size:11px;color:var(--t2);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px"><i class="fas fa-desktop"></i> Linked devices</div>
     <div style="margin-bottom:8px">${devHtml}</div>
     <div class="modal-note" style="margin-top:14px">
       <i class="fas fa-info-circle"></i>
-      Default is 1 device per key. Buy extra slots (${DEVICE_SLOT_PRICE} VT each) on the key card. Remove a device here to free a slot for another PC.
+      Default is 1 device per key. Use <strong>Add slot</strong> above for +1 device (${DEVICE_SLOT_PRICE} VT). Remove a device below to free a slot for another PC.
     </div>
     <div style="text-align:center;margin-top:16px">
       <button type="button" onclick="closeKeyInfoModal()" class="submit-btn" style="max-width:220px;margin:0 auto;display:block"><i class="fas fa-check"></i> Close</button>
@@ -400,7 +446,6 @@ function renderProfile(user, profile, subs) {
             <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap">
               <button type="button" class="key-copy" onclick="copyText('${kv}')"><i class="fas fa-copy"></i> Copy</button>
               <button type="button" class="key-copy" onclick="openKeyInfoModal('${s.id}')" title="License and device info"><i class="fas fa-circle-info"></i> Info</button>
-              <button type="button" class="key-copy" onclick="purchaseExtraDeviceSlot('${s.id}')" title="Add one device slot"><i class="fas fa-plus"></i> +Slot (${DEVICE_SLOT_PRICE} VT)</button>
             </div>
           </div>
           <div class="key-info-row" style="margin-top:8px;flex-wrap:wrap;gap:6px">

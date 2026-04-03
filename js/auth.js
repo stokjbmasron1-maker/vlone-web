@@ -76,7 +76,7 @@ function setLoading(btn, spin, icon, on) {
 
 function socialLogin(p) { showMsg(p + ' login coming soon!', 'ok'); }
 
-// LOGIN
+// LOGIN (username: pakai RPC — baca profiles tanpa login diblokir RLS)
 async function doLogin() {
   var user = document.getElementById('l-user').value.trim();
   var pass = document.getElementById('l-pass').value;
@@ -87,9 +87,15 @@ async function doLogin() {
     if (sb) {
       var email = user;
       if (!user.includes('@')) {
-        var pr = await sb.from('profiles').select('email').eq('username', user).single();
-        if (!pr.data) { showMsg('Incorrect username or password.'); setLoading('login-btn','login-spin','login-icon',false); return; }
-        email = pr.data.email;
+        var lu = await sb.rpc('get_email_by_username', { u: user });
+        if (lu.error) {
+          console.warn('get_email_by_username', lu.error);
+          showMsg('Login with username unavailable. Run SQL in supabase/rpc_login_username.sql or use your email.');
+          setLoading('login-btn', 'login-spin', 'login-icon', false);
+          return;
+        }
+        if (!lu.data) { showMsg('Incorrect username or password.'); setLoading('login-btn','login-spin','login-icon',false); return; }
+        email = lu.data;
       }
       var r = await sb.auth.signInWithPassword({ email, password: pass });
       if (r.error) throw r.error;
@@ -113,12 +119,22 @@ async function doRegister() {
   var pass  = document.getElementById('r-pass').value;
   var pw    = document.getElementById('r-pw').value.trim();
   if (!user||!email||!pass||!pw) { showMsg('Please fill in all fields.'); return; }
+  if (user.length < 2 || user.length > 32) { showMsg('Username must be 2–32 characters.'); return; }
+  if (!/^[a-zA-Z0-9_]+$/.test(user)) { showMsg('Username: letters, numbers, and underscore only.'); return; }
   if (pass.length < 6) { showMsg('Password must be at least 6 characters.'); return; }
   if (!/^[^@]+@[^@]+\.[^@]+$/.test(email)) { showMsg('Please enter a valid email.'); return; }
   setLoading('reg-btn','reg-spin','reg-icon',true);
   try {
     var sb = getSB();
     if (sb) {
+      var chk = await sb.rpc('is_username_available', { u: user });
+      if (chk.error) {
+        console.warn('is_username_available', chk.error);
+        showMsg('Could not verify username. Run SQL in supabase/rpc_login_username.sql in Supabase, then try again.');
+        setLoading('reg-btn', 'reg-spin', 'reg-icon', false);
+        return;
+      }
+      if (chk.data === false) { showMsg('Username already taken.'); setLoading('reg-btn','reg-spin','reg-icon',false); return; }
       var r = await sb.auth.signUp({ email, password: pass, options:{ data:{ username:user, pw_username:pw } } });
       if (r.error) throw r.error;
       await new Promise(function(w){ setTimeout(w,1000); });

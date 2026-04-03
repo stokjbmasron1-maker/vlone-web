@@ -134,17 +134,13 @@
     <div class="sec-lbl">💎 Pricing</div>
     <h2 class="sec-title">Choose Your Plan</h2>
     <p class="sec-sub" style="margin:0 auto">All plans are purchased using <strong style="color:var(--p)">Vlone Token (VT)</strong>. Top up VT via BGL, Crypto, or Card.</p>
-    <div class="reveal pricing-categories" style="max-width:920px;margin:18px auto 6px;padding:14px 18px;background:rgba(15,23,42,.55);border:1px solid rgba(148,163,184,.14);border-radius:14px;display:grid;grid-template-columns:1fr 1fr;gap:14px 24px;text-align:left;font-size:12px;color:var(--t2);line-height:1.5">
-      <div>
-        <div style="font-weight:700;color:var(--p);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px"><i class="fas fa-calendar-check" style="margin-right:6px;opacity:.85"></i>Sub</div>
-        <div>How long your access stays active for that plan (trial, daily, monthly, or lifetime).</div>
-      </div>
-      <div>
-        <div style="font-weight:700;color:var(--c);font-size:11px;text-transform:uppercase;letter-spacing:.06em;margin-bottom:6px"><i class="fas fa-desktop" style="margin-right:6px;opacity:.85"></i>Device limitation</div>
-        <div>Each license key includes <strong style="color:var(--t1)">1 PC</strong> by default. Need more? Add slots for <strong style="color:var(--t1)">50 VT</strong> each in <strong>Profile → Manage Keys → Info → Add slot</strong>.</div>
-      </div>
+    <div class="pricing-cat-wrap reveal">
+      <button type="button" class="pricing-cat-btn act" data-cat="sub" onclick="setPricingCategory('sub')" aria-pressed="true"><i class="fas fa-calendar-days"></i> Subscription</button>
+      <button type="button" class="pricing-cat-btn" data-cat="device" onclick="setPricingCategory('device')" aria-pressed="false"><i class="fas fa-desktop"></i> Device limit</button>
     </div>
   </div>
+
+  <div id="pricing-panel-sub" class="pricing-panel">
   <div class="pricing-grid">
 
     <!-- DAILY -->
@@ -174,6 +170,10 @@
       <div class="plan-name">Monthly</div>
       <div class="plan-price grad">299</div>
       <div class="plan-unit"><span style="color:var(--p);font-weight:700">VT</span> / Month <span style="font-size:10px;color:var(--g)">≈ 8 BGL</span></div>
+      <div style="margin:8px 0 4px;padding:8px 10px;background:rgba(168,85,247,.07);border-radius:8px;font-size:11px;line-height:1.45;color:var(--t2);text-align:left">
+        <div><span style="color:var(--p);font-weight:700">Sub:</span> 30 days</div>
+        <div><span style="color:var(--c);font-weight:700">Device limit:</span> 1 PC (+50 VT / slot)</div>
+      </div>
       <div class="plan-features">
         <div class="pf"><i class="fas fa-check"></i>All 14 features</div>
         <div class="pf"><i class="fas fa-check"></i>30 days access</div>
@@ -205,6 +205,30 @@
       <button id="lifetime-btn" class="plan-btn" style="background:linear-gradient(135deg,#be185d,#ec4899);color:#fff;box-shadow:0 0 20px rgba(236,72,153,.3)" onclick="sOpenPlan('lifetime')"><i class="fas fa-crown"></i> Buy 499 VT</button>
     </div>
 
+  </div>
+  </div>
+
+  <div id="pricing-panel-device" class="pricing-panel" style="display:none">
+    <div class="pricing-grid pricing-grid-device">
+      <div class="plan plan-device-slot reveal">
+        <div class="plan-glow" style="background:var(--c)"></div>
+        <div class="plan-badge" style="background:linear-gradient(135deg,#0891b2,#06b6d4)">➕ ADD CAPACITY</div>
+        <div class="plan-name">Extra device slot</div>
+        <div class="plan-price grad">50</div>
+        <div class="plan-unit"><span style="color:var(--p);font-weight:700">VT</span> per slot <span style="font-size:10px;color:var(--t2)">≈ 1.35 BGL</span></div>
+        <div style="margin:8px 0 4px;padding:8px 10px;background:rgba(6,182,212,.1);border:1px solid rgba(6,182,212,.2);border-radius:8px;font-size:11px;line-height:1.45;color:var(--t2);text-align:left">
+          <div><span style="color:var(--c);font-weight:700">What you get:</span> +1 PC allowed on <strong>one</strong> license key (same cheat access).</div>
+          <div style="margin-top:6px"><span style="color:var(--p);font-weight:700">How to pay:</span> use VT balance on your profile — pick a key → <strong>Info</strong> → <strong>Add slot</strong> → confirm.</div>
+        </div>
+        <div class="plan-features">
+          <div class="pf"><i class="fas fa-check"></i>Stack unlimited slots (50 VT each)</div>
+          <div class="pf"><i class="fas fa-check"></i>Remove devices anytime in Profile</div>
+          <div class="pf"><i class="fas fa-check"></i>Requires an active license key</div>
+        </div>
+        <a href="profile.html" class="plan-btn plan-btn-main" style="display:flex;align-items:center;justify-content:center;gap:8px;text-decoration:none"><i class="fas fa-user"></i> Open profile to buy</a>
+        <p style="margin:12px 0 0;font-size:11px;color:var(--t2);line-height:1.45">Not logged in? <a href="auth.html" style="color:var(--p)">Sign in</a> first, then top up VT if needed.</p>
+      </div>
+    </div>
   </div>
 
   <!-- VTOKEN INFO -->
@@ -413,6 +437,26 @@
 <!-- TOAST -->
 <div id="s-toast" style="position:fixed;bottom:28px;left:50%;transform:translateX(-50%);background:rgba(16,185,129,.12);border:1px solid rgba(16,185,129,.3);border-radius:10px;padding:10px 24px;font-size:13px;font-weight:600;color:#6ee7b7;z-index:1200;display:none;backdrop-filter:blur(10px)"></div>
 
+<script>
+function setPricingCategory(cat) {
+  document.querySelectorAll('.pricing-cat-btn').forEach(function (b) {
+    var on = b.getAttribute('data-cat') === cat;
+    b.classList.toggle('act', on);
+    b.setAttribute('aria-pressed', on ? 'true' : 'false');
+  });
+  var sub = document.getElementById('pricing-panel-sub');
+  var dev = document.getElementById('pricing-panel-device');
+  if (sub) sub.style.display = cat === 'sub' ? 'block' : 'none';
+  if (dev) dev.style.display = cat === 'device' ? 'block' : 'none';
+  try {
+    var base = location.pathname + location.search;
+    history.replaceState(null, '', cat === 'device' ? base + '#device-limit' : base);
+  } catch (e) {}
+}
+document.addEventListener('DOMContentLoaded', function () {
+  if (location.hash === '#device-limit') setPricingCategory('device');
+});
+</script>
 <script src="js/store.js"></script>
 </body>
 </html>

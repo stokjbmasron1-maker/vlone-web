@@ -4,7 +4,7 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = dirname(fileURLToPath(import.meta.url));
 
-/** Dev: open / → store (admin dashboard stays at /index.html). Prod: vercel.json rewrites /. */
+/** Dev: / langsung ke store. Admin: /admin.html */
 function rootToStorePlugin() {
   return {
     name: 'vlone-root-to-store',
@@ -33,6 +33,7 @@ export default defineConfig({
     rollupOptions: {
       input: {
         index: resolve(__dirname, 'index.html'),
+        admin: resolve(__dirname, 'admin.html'),
         store: resolve(__dirname, 'store.html'),
         auth: resolve(__dirname, 'auth.html'),
         profile: resolve(__dirname, 'profile.html'),

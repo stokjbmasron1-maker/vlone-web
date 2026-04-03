@@ -1,8 +1,4 @@
-/**
- * POST /api/verify
- * Body: { key: string, hwid: string }
- * Env: SUPABASE_URL, SUPABASE_SERVICE_ROLE_KEY, JWT_SECRET (32+ chars recommended)
- */
+
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'node:crypto';
 
@@ -133,6 +129,10 @@ export default async function handler(req, res) {
 
   const bound = row.hwid != null && String(row.hwid).trim() !== '';
   const storedHwid = bound ? String(row.hwid).trim() : '';
+  const mismatchMsg =
+    'This license is already registered to another device. Use the original PC or contact support.';
+
+  let firstActivation = false;
 
   if (!bound) {
     const nextCount = (typeof row.device_count === 'number' ? row.device_count : 0) + 1;
@@ -152,6 +152,10 @@ export default async function handler(req, res) {
       return json(res, 500, { valid: false, message: 'Database error' });
     }
 
+    if (updated) {
+      firstActivation = true;
+    }
+
     if (!updated) {
       const { data: again, error: aErr } = await supabase
         .from('subscriptions')
@@ -159,11 +163,11 @@ export default async function handler(req, res) {
         .eq('id', row.id)
         .single();
       if (aErr || String(again?.hwid || '').trim() !== hwid) {
-        return json(res, 200, { valid: false, message: 'HWID mismatch. Contact support.' });
+        return json(res, 200, { valid: false, message: mismatchMsg });
       }
     }
   } else if (storedHwid !== hwid) {
-    return json(res, 200, { valid: false, message: 'HWID mismatch. Contact support.' });
+    return json(res, 200, { valid: false, message: mismatchMsg });
   }
 
   const { error: touchErr } = await supabase
@@ -182,6 +186,9 @@ export default async function handler(req, res) {
     plan: row.plan,
     expires_at: row.expires_at,
     session_token,
-    message: 'License verified',
+    first_activation: firstActivation,
+    message: firstActivation
+      ? 'License verified. This device is now registered for this key.'
+      : 'License verified.',
   });
 }

@@ -1,18 +1,3 @@
-/**
- * VLONE — contoh client C++ (Windows) POST/GET pakai WinHTTP (built-in).
- *
- * Build (Developer Command Prompt / MSVC):
- *   cl /EHsc /std:c++17 vlone_http_demo.cpp /link winhttp.lib
- *
- * Atau g++ + libwinhttp (MSYS2):
- *   g++ -std=c++17 vlone_http_demo.cpp -lwinhttp -o vlone_http_demo.exe
- *
- * Run:
- *   vlone_http_demo.exe
- *
- * Edit kHost dan kVerifyPath di bawah sesuai domain Vercel kamu.
- */
-
 #define WIN32_LEAN_AND_MEAN
 #include <windows.h>
 #include <winhttp.h>
@@ -22,38 +7,32 @@
 
 #pragma comment(lib, "winhttp.lib")
 
-// --- ganti ke domain deploy kamu (tanpa https://) ---
 static const wchar_t* kHost = L"vlone-web.vercel.app";
 static const wchar_t* kVerifyPath = L"/api/verify";
-static const wchar_t* kGetPath = L"/store.html"; // contoh GET halaman statis
 
-static bool HttpsRequest(
+static bool HttpsPostJson(
     const wchar_t* host,
-    INTERNET_PORT port,
     const wchar_t* path,
-    const wchar_t* method,          // L"GET" or L"POST"
-    const std::string* bodyUtf8,    // null for GET
+    const std::string& bodyUtf8,
     std::string& responseOut,
     DWORD& statusCodeOut) {
   responseOut.clear();
   statusCodeOut = 0;
 
   HINTERNET hSession =
-      WinHttpOpen(L"VLONE-CPP-Demo/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
+      WinHttpOpen(L"VLONE-Client/1.0", WINHTTP_ACCESS_TYPE_DEFAULT_PROXY,
                   WINHTTP_NO_PROXY_NAME, WINHTTP_NO_PROXY_BYPASS, 0);
   if (!hSession) return false;
 
-  HINTERNET hConnect =
-      WinHttpConnect(hSession, host, port, 0);
+  HINTERNET hConnect = WinHttpConnect(hSession, host, INTERNET_DEFAULT_HTTPS_PORT, 0);
   if (!hConnect) {
     WinHttpCloseHandle(hSession);
     return false;
   }
 
-  DWORD flags = WINHTTP_FLAG_SECURE;
   HINTERNET hRequest = WinHttpOpenRequest(
-      hConnect, method, path, nullptr, WINHTTP_NO_REFERER,
-      WINHTTP_DEFAULT_ACCEPT_TYPES, flags);
+      hConnect, L"POST", path, nullptr, WINHTTP_NO_REFERER,
+      WINHTTP_DEFAULT_ACCEPT_TYPES, WINHTTP_FLAG_SECURE);
   if (!hRequest) {
     WinHttpCloseHandle(hConnect);
     WinHttpCloseHandle(hSession);
@@ -61,20 +40,14 @@ static bool HttpsRequest(
   }
 
   std::wstring headers = L"Content-Type: application/json\r\n";
-  WinHttpAddRequestHeaders(
-      hRequest, headers.c_str(), static_cast<DWORD>(-1),
-      WINHTTP_ADDREQ_FLAG_ADD);
+  WinHttpAddRequestHeaders(hRequest, headers.c_str(), static_cast<DWORD>(-1),
+                           WINHTTP_ADDREQ_FLAG_ADD);
 
-  const void* optBody = WINHTTP_NO_REQUEST_DATA;
-  DWORD optLen = 0;
-  if (bodyUtf8 && !bodyUtf8->empty()) {
-    optBody = bodyUtf8->data();
-    optLen = static_cast<DWORD>(bodyUtf8->size());
-  }
-
+  DWORD len = static_cast<DWORD>(bodyUtf8.size());
   BOOL ok = WinHttpSendRequest(
-      hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0, const_cast<void*>(optBody),
-      optLen, optLen, 0);
+      hRequest, WINHTTP_NO_ADDITIONAL_HEADERS, 0,
+      bodyUtf8.empty() ? WINHTTP_NO_REQUEST_DATA : const_cast<void*>(static_cast<const void*>(bodyUtf8.data())),
+      len, len, 0);
   if (!ok) {
     WinHttpCloseHandle(hRequest);
     WinHttpCloseHandle(hConnect);
@@ -110,49 +83,131 @@ static bool HttpsRequest(
   return true;
 }
 
+static bool JsonBoolTrue(const std::string& j, const char* key) {
+  std::string a = std::string("\"") + key + "\":true";
+  std::string b = std::string("\"") + key + "\": true";
+  return j.find(a) != std::string::npos || j.find(b) != std::string::npos;
+}
+
+static std::string JsonStringValue(const std::string& j, const char* key) {
+  std::string pat = std::string("\"") + key + "\":\"";
+  size_t p = j.find(pat);
+  if (p == std::string::npos) return {};
+  p += pat.size();
+  size_t e = j.find('"', p);
+  if (e == std::string::npos) return {};
+  return j.substr(p, e - p);
+}
+
+static std::string Trim(const std::string& s) {
+  size_t a = 0, b = s.size();
+  while (a < b && (s[a] == ' ' || s[a] == '\t' || s[a] == '\r' || s[a] == '\n')) ++a;
+  while (b > a && (s[b - 1] == ' ' || s[b - 1] == '\t' || s[b - 1] == '\r' || s[b - 1] == '\n')) --b;
+  return s.substr(a, b - a);
+}
+
+static std::string JsonEscape(const std::string& s) {
+  std::string o;
+  o.reserve(s.size() + 8);
+  for (unsigned char c : s) {
+    if (c == '\\')
+      o += "\\\\";
+    else if (c == '"')
+      o += "\\\"";
+    else if (c < 0x20)
+      o += ' ';
+    else
+      o += static_cast<char>(c);
+  }
+  return o;
+}
+
+static std::string Utf8FromWide(const std::wstring& w) {
+  if (w.empty()) return {};
+  int n = WideCharToMultiByte(CP_UTF8, 0, w.data(), static_cast<int>(w.size()), nullptr, 0, nullptr, nullptr);
+  if (n <= 0) return "pc";
+  std::string out(static_cast<size_t>(n), '\0');
+  WideCharToMultiByte(CP_UTF8, 0, w.data(), static_cast<int>(w.size()), out.data(), n, nullptr, nullptr);
+  return out;
+}
+
+static std::string DefaultHwidFromPcName() {
+  wchar_t buf[MAX_COMPUTERNAME_LENGTH + 1] = {};
+  DWORD sz = MAX_COMPUTERNAME_LENGTH + 1;
+  if (!GetComputerNameW(buf, &sz) || sz == 0) return "vlone-pc-unknown";
+  std::wstring w(buf, sz);
+  std::string u8 = Utf8FromWide(w);
+  std::string h = "vlone-" + u8;
+  while (h.size() < 8) h += '0';
+  if (h.size() > 256) h.resize(256);
+  return h;
+}
+
 int main() {
   SetConsoleOutputCP(CP_UTF8);
 
-  std::cout << "=== VLONE HTTP demo (WinHTTP) ===\n\n";
+  std::cout
+      << "VLONE license check\n"
+      << "--------------------\n"
+      << "Flow:\n"
+      << "  1) You enter the license key from the web dashboard.\n"
+      << "  2) This app sends the key + this PC hardware id (HWID) to the server.\n"
+      << "  3) Server checks the key is valid and not expired.\n"
+      << "  4) If no device was linked yet, THIS device is registered.\n"
+      << "  5) If the key is already linked to another HWID, verification fails.\n\n"
+      << "HWID for this run is taken from this PC name (you can replace with a real fingerprint later).\n\n";
 
-  // ----- POST /api/verify (JSON) -----
-  {
-    std::string json = R"({"key":"VLN-XXXXXXXX-MON","hwid":"demo-pc-cpp-001"})";
-    std::string resp;
-    DWORD status = 0;
-
-    std::wcout << L"[POST] https://" << kHost << kVerifyPath << L"\n";
-    std::cout << "Body: " << json << "\n";
-
-    if (!HttpsRequest(kHost, INTERNET_DEFAULT_HTTPS_PORT, kVerifyPath, L"POST",
-                      &json, resp, status)) {
-      std::cerr << "POST failed (WinHTTP error).\n";
-    } else {
-      std::cout << "HTTP status: " << status << "\n";
-      std::cout << "Response:\n" << resp << "\n";
-    }
-    std::cout << "\n";
+  std::cout << "Enter license key (from web dashboard, e.g. VLN-XXXXXXXX-MON): ";
+  std::cout.flush();
+  std::string license;
+  if (!std::getline(std::cin, license)) {
+    std::cerr << "ERROR: Could not read input.\n";
+    return 1;
+  }
+  license = Trim(license);
+  if (license.empty()) {
+    std::cerr << "ERROR: License key cannot be empty.\n";
+    return 1;
   }
 
-  // ----- GET (contoh ambil HTML store — bukti koneksi GET) -----
-  {
-    std::string resp;
-    DWORD status = 0;
-    std::wcout << L"[GET] https://" << kHost << kGetPath << L"\n";
+  const std::string hwid = DefaultHwidFromPcName();
+  const std::string json =
+      std::string("{\"key\":\"") + JsonEscape(license) + "\",\"hwid\":\"" + JsonEscape(hwid) + "\"}";
 
-    if (!HttpsRequest(kHost, INTERNET_DEFAULT_HTTPS_PORT, kGetPath, L"GET",
-                      nullptr, resp, status)) {
-      std::cerr << "GET failed (WinHTTP error).\n";
-    } else {
-      std::cout << "HTTP status: " << status << "\n";
-      std::cout << "Body length: " << resp.size() << " bytes";
-      if (resp.size() > 200)
-        std::cout << " (first 200 chars):\n" << resp.substr(0, 200) << "...\n";
-      else
-        std::cout << "\n" << resp << "\n";
-    }
+  std::string resp;
+  DWORD httpStatus = 0;
+
+  std::wcout << L"\nPOST https://" << kHost << kVerifyPath << L"\n";
+  std::cout << "HWID sent: " << hwid << "\n";
+  std::cout << "Request body: " << json << "\n\n";
+
+  if (!HttpsPostJson(kHost, kVerifyPath, json, resp, httpStatus)) {
+    std::cerr << "ERROR: Network request failed (WinHTTP).\n";
+    return 1;
   }
 
-  std::cout << "\nDone.\n";
-  return 0;
+  std::cout << "HTTP status: " << httpStatus << "\n";
+  std::cout << "Raw JSON: " << resp << "\n\n";
+
+  const bool valid = JsonBoolTrue(resp, "valid");
+  const std::string apiMessage = JsonStringValue(resp, "message");
+  const bool firstAct = JsonBoolTrue(resp, "first_activation");
+
+  std::cout << "--- Result ---\n";
+  if (valid) {
+    std::cout << "STATUS: LICENSE OK\n";
+    if (!apiMessage.empty()) std::cout << "Message: " << apiMessage << "\n";
+    if (firstAct)
+      std::cout << "Note: This device was just registered for this license key.\n";
+    else
+      std::cout << "Note: Device already matched; license checks out.\n";
+  } else {
+    std::cout << "STATUS: LICENSE FAILED\n";
+    if (!apiMessage.empty())
+      std::cout << "Message: " << apiMessage << "\n";
+    else
+      std::cout << "Message: (see raw JSON above)\n";
+  }
+
+  return valid ? 0 : 2;
 }

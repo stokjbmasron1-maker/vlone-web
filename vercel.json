@@ -8,5 +8,8 @@
       "memory": 256,
       "maxDuration": 10
     }
-  }
+  },
+  "rewrites": [
+    { "source": "/", "destination": "/store.html" }
+  ]
 }

@@ -6,6 +6,7 @@
 #include <vector>
 
 #pragma comment(lib, "winhttp.lib")
+#pragma comment(lib, "advapi32.lib")
 
 static const wchar_t* kHost = L"vlone-web.vercel.app";
 static const wchar_t* kVerifyPath = L"/api/verify";
@@ -131,16 +132,47 @@ static std::string Utf8FromWide(const std::wstring& w) {
   return out;
 }
 
-static std::string DefaultHwidFromPcName() {
+static std::string ReadMachineGuidUtf8() {
+  HKEY key = nullptr;
+  if (RegOpenKeyExW(HKEY_LOCAL_MACHINE, L"SOFTWARE\\Microsoft\\Cryptography", 0,
+                    KEY_READ | KEY_WOW64_64KEY, &key) != ERROR_SUCCESS ||
+      !key)
+    return {};
+
+  wchar_t buf[80] = {};
+  DWORD bytes = sizeof(buf);
+  DWORD type = 0;
+  LONG q = RegQueryValueExW(key, L"MachineGuid", nullptr, &type,
+                            reinterpret_cast<LPBYTE>(buf), &bytes);
+  RegCloseKey(key);
+  if (q != ERROR_SUCCESS || (type != REG_SZ && type != REG_EXPAND_SZ)) return {};
+
+  size_t n = 0;
+  while (n < 79 && buf[n] != L'\0') ++n;
+  return Utf8FromWide(std::wstring(buf, n));
+}
+
+static std::string FallbackHwidFromPcName() {
   wchar_t buf[MAX_COMPUTERNAME_LENGTH + 1] = {};
   DWORD sz = MAX_COMPUTERNAME_LENGTH + 1;
   if (!GetComputerNameW(buf, &sz) || sz == 0) return "vlone-pc-unknown";
   std::wstring w(buf, sz);
   std::string u8 = Utf8FromWide(w);
-  std::string h = "vlone-" + u8;
+  std::string h = "pc-" + u8;
   while (h.size() < 8) h += '0';
   if (h.size() > 256) h.resize(256);
   return h;
+}
+
+static std::string BuildHwidForApi() {
+  std::string mg = Trim(ReadMachineGuidUtf8());
+  if (!mg.empty()) {
+    std::string h = std::string("mg-") + mg;
+    while (h.size() < 8) h += '0';
+    if (h.size() > 256) h.resize(256);
+    return h;
+  }
+  return FallbackHwidFromPcName();
 }
 
 int main() {
@@ -155,7 +187,7 @@ int main() {
       << "  3) Server checks the key is valid and not expired.\n"
       << "  4) If no device was linked yet, THIS device is registered.\n"
       << "  5) If the key is already linked to another HWID, verification fails.\n\n"
-      << "HWID for this run is taken from this PC name (you can replace with a real fingerprint later).\n\n";
+      << "HWID: Windows MachineGuid (registry) + prefix mg-. Fallback: PC name if unavailable.\n\n";
 
   std::cout << "Enter license key (from web dashboard, e.g. VLN-XXXXXXXX-MON): ";
   std::cout.flush();
@@ -170,7 +202,7 @@ int main() {
     return 1;
   }
 
-  const std::string hwid = DefaultHwidFromPcName();
+  const std::string hwid = BuildHwidForApi();
   const std::string json =
       std::string("{\"key\":\"") + JsonEscape(license) + "\",\"hwid\":\"" + JsonEscape(hwid) + "\"}";
 

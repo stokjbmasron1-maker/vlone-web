@@ -2,8 +2,14 @@
 import { createClient } from '@supabase/supabase-js';
 import crypto from 'node:crypto';
 
-const WINDOW_MS = 60_000;
-const MAX_PER_WINDOW = 10;
+const WINDOW_MS =
+  Number(process.env.VERIFY_RATE_WINDOW_MS) > 0
+    ? Number(process.env.VERIFY_RATE_WINDOW_MS)
+    : 60_000;
+const MAX_PER_WINDOW =
+  Number(process.env.VERIFY_RATE_MAX) > 0
+    ? Number(process.env.VERIFY_RATE_MAX)
+    : 30;
 const rateState = new Map();
 
 function getClientIp(req) {

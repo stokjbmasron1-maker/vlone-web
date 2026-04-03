@@ -66,11 +66,46 @@ Project → Settings → Environment Variables → tambahkan:
 Lalu redeploy (Deployments → ... → Redeploy).
 
 --------------------------------------------------------------------------------
-6) Kalau repo GitHub tidak muncul di daftar Vercel
+6) Error: "No Git Repositories Found" + ganti akun di kiri atas
 --------------------------------------------------------------------------------
-- Di GitHub: Settings → Applications → Authorized OAuth Apps / Installed GitHub Apps
-  → pastikan Vercel punya akses ke akun atau organisasi tempat repo berada.
-- Atau: GitHub repo → Settings → Collaborators — tambahkan akun lain jika perlu.
+Vercel sedang melihat AKUN / ORGANISASI GITHUB yang SALAH, atau app Vercel tidak
+diberi akses ke repo kamu. Kerjakan berurutan:
+
+A) Di halaman Import Vercel — dropdown kiri atas
+   - Klik akun atau organisasi di pojok kiri atas (bukan menu Vercel).
+   - Pilih user GitHub yang BENAR-BENAR memiliki repo VLONE (bukan akun lain).
+   - Kalau baru pertama kali: pilih "Add GitHub Account" / hubungkan akun lain.
+
+B) Pastikan repo sudah ADA di GitHub (sudah push dari PC)
+   - Buka github.com → login sebagai pemilik repo → cek repo muncul di profile.
+
+C) Beri Vercel akses ke repo (paling sering ini penyebabnya)
+   - GitHub (login sebagai pemilik repo) → Settings (foto profil) →
+     Applications → Installed GitHub Apps → Vercel → Configure.
+   - Bagian "Repository access":
+     * Pilih "All repositories" (paling gampang), ATAU
+     * "Only select repositories" → Add repository → pilih repo vlone-web (dll).
+   - Save.
+
+D) Putus lalu sambung lagi (kalau A+C belum berhasil)
+   - Vercel → Account Settings → Login Connections / Git (atau Team Settings).
+   - Disconnect GitHub → Import lagi → Continue with GitHub → login GitHub yang
+     punya repo (perhatikan email/username di layar GitHub saat OAuth).
+
+E) Repo di bawah Organization (bukan akun pribadi)
+   - Install Vercel untuk organization itu: saat Configure, pastikan org dipilih.
+   - Kadang perlu admin org yang approve instalasi Vercel untuk org tersebut.
+
+F) Tanpa Git (cadangan): deploy dari laptop
+   - npm i -g vercel   atau   npx vercel@latest login
+   - Di folder proyek: npx vercel@latest --prod
+   - Nanti bisa sambungkan Git dari dashboard kalau sudah rapi.
+
+--------------------------------------------------------------------------------
+7) Lain-lain
+--------------------------------------------------------------------------------
+- Collaborators di repo tidak otomatis mengubah "siapa" yang terhubung ke Vercel;
+  yang penting instalasi GitHub App Vercel di akun/org yang MEMILIKI repo.
 
 --------------------------------------------------------------------------------
 Endpoint setelah hidup: https://<nama-proyek>.vercel.app/api/verify

@@ -1,0 +1,58 @@
+================================================================================
+VLONE — Apa itu "repository"? Kamu punya atau belum?
+================================================================================
+
+• REPOSITORY GitHub = tempat menyimpan kode VLONE di internet (situs github.com).
+• Sekarang kode VLONE ada di LAPTOP kamu saja (folder VLONE), BELUM otomatis
+  muncul di GitHub.
+
+Cara cek apakah SUDAH ada repo di akun GitHub kamu:
+  1) Buka https://github.com dan LOGIN pakai akun GitHub kamu.
+  2) Klik foto profil (kanan atas) → "Your repositories".
+  3) Lihat daftar: kalau TIDAK ada nama seperti "vlone" / "vlone-web", berarti
+     untuk proyek ini kamu BELUM punya repo — wajar, harus dibuat dulu.
+
+Siapa yang bisa buat repo? Hanya kamu (lewat browser), login GitHub kamu.
+Orang lain / AI tidak bisa login ke akun kamu.
+
+================================================================================
+Buat repository baru (5 menit) — ikuti urutan ini saja
+================================================================================
+
+LANGKAH 1 — Buat repo KOSONG di GitHub
+  • Buka: https://github.com/new
+  • Repository name: vlone-web   (atau nama lain, tapi ingat nanti dipakai di URL)
+  • Pilih: Public atau Private (suka-suka kamu)
+  • JANGAN centang "Add a README" / .gitignore / license (biarkan kosong)
+  • Klik tombol hijau "Create repository"
+
+LANGKAH 2 — Salin alamat repo
+  Setelah dibuat, GitHub menampilkan kotak dengan URL. Salin yang HTTPS, contoh:
+    https://github.com/NAMAUSER/vlone-web.git
+  Ganti NAMAUSER dengan username GitHub kamu (bukan email).
+
+LANGKAH 3 — Di Windows, buka PowerShell, jalankan (SATU BARIS remote, ganti URL):
+
+  cd "C:\Users\siodo\OneDrive\Desktop\VLONE"
+
+  git remote add origin https://github.com/NAMAUSER/vlone-web.git
+
+  Kalau muncul error "remote origin already exists", pakai ini dulu:
+  git remote remove origin
+  lalu ulangi git remote add origin ...
+
+LANGKAH 4 — Upload kode ke GitHub
+
+  git push -u origin main
+
+  • Browser atau Windows bisa minta LOGIN GitHub — itu normal.
+  • Setelah sukses, refresh halaman repo di GitHub: file-file VLONE harus muncul.
+
+================================================================================
+Masih bingung?
+================================================================================
+
+Tulis di chat (boleh): username GitHub kamu (bukan password), nanti perintah
+`git remote add` bisa ditulis lengkap tanpa NAMAUSER.
+
+================================================================================

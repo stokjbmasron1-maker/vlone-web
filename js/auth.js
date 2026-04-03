@@ -140,7 +140,7 @@ async function doRegister() {
       await new Promise(function(w){ setTimeout(w,1000); });
       try {
         var exp = new Date(Date.now()+86400000).toISOString();
-        await sb.from('subscriptions').insert({ user_id:r.data.user.id, plan:'trial', tokens_paid:0, payment_method:'free', is_active:true, expires_at:exp, started_at:new Date().toISOString() });
+        await sb.from('subscriptions').insert({ user_id:r.data.user.id, plan:'trial', tokens_paid:0, payment_method:'free', is_active:true, expires_at:exp, started_at:new Date().toISOString(), max_devices:1 });
       } catch(subErr) { console.warn('Trial insert failed:',subErr.message); }
       showMsg('✅ Account created! Activating your free trial...','ok');
       setTimeout(function(){ location.href='store.html?trial=activated'; },1800);

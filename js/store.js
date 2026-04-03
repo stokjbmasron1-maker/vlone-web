@@ -149,11 +149,11 @@ function updatePricingCards(vt, sub) {
     } else {
       // Logged in (any state) — show buy 1 day
       trialBtn.disabled=false; trialBtn.style.cssText='';
-      if (vt >= 10) {
-        trialBtn.innerHTML='<i class="fas fa-coins"></i> Buy 1 Day (10 VT)';
+      if (vt >= 67) {
+        trialBtn.innerHTML='<i class="fas fa-coins"></i> Buy 1 Day (67 VT)';
         trialBtn.onclick=()=>sOpenPlan('daily');
       } else {
-        trialBtn.innerHTML=`<i class="fas fa-coins"></i> Need ${10-vt} more VT`;
+        trialBtn.innerHTML=`<i class="fas fa-coins"></i> Need ${67-vt} more VT`;
         trialBtn.style.opacity='0.7'; trialBtn.style.pointerEvents='none';
       }
     }
@@ -194,7 +194,7 @@ function updatePricingCards(vt, sub) {
 // PLAN DEFINITIONS
 // ─────────────────────────────────────────
 const PLANS = {
-  daily:    { label:'Daily',    price:10,  duration:'1 Day',   durationMs:86400000 },
+  daily:    { label:'Daily',    price:67,  duration:'1 Day',   durationMs:86400000 },
   monthly:  { label:'Monthly',  price:299, duration:'30 Days', durationMs:30*86400000 },
   lifetime: { label:'Lifetime', price:499, duration:'Forever', durationMs:null },
 };
@@ -477,10 +477,11 @@ async function sExecPlan(mode) {
           user_id:        _storeUserId,
           plan:           _storePlanMeta.label.toLowerCase(),
           tokens_paid:    _storePlanMeta.price,
-          payment_method: PM_VTOKENS,   // 'bgl' — valid DB enum value
+          payment_method: PM_VTOKENS,
           is_active:      true,
           started_at:     now.toISOString(),
-          expires_at:     expiresAt
+          expires_at:     expiresAt,
+          max_devices:    1,
         })
         .select('id')
         .single();
@@ -497,11 +498,16 @@ async function sExecPlan(mode) {
     // ── Log payment (non-fatal) ──
     try {
       await _sbClient.from('payment_requests').insert({
-        user_id:         _storeUserId,
-        amount_tokens:   _storePlanMeta.price,
-        payment_method:  PM_VTOKENS,
-        reference_data:  JSON.stringify({ plan: _storePlanMeta.label, key: licKey, mode: isExtend ? 'extend' : 'new' }),
-        status:          'completed'
+        user_id: _storeUserId,
+        plan: _storePlanMeta.label.toLowerCase(),
+        tokens: _storePlanMeta.price,
+        method: PM_VTOKENS,
+        reference: JSON.stringify({
+          plan: _storePlanMeta.label,
+          key: licKey,
+          mode: isExtend ? 'extend' : 'new',
+        }),
+        status: 'approved',
       });
     } catch(payErr) { console.warn('Payment log skipped (non-fatal):', payErr.message); }
 

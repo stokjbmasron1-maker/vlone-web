@@ -58,6 +58,9 @@ function signSessionJwt(payload, secret) {
   return `${data}.${sig}`;
 }
 
+const limitMsg =
+  'Device limit reached for this license. Remove a device in your profile or buy an extra device slot (50 VT).';
+
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {
     res.setHeader('Access-Control-Allow-Origin', '*');
@@ -117,7 +120,9 @@ export default async function handler(req, res) {
 
   const { data: row, error: qErr } = await supabase
     .from('subscriptions')
-    .select('id, plan, expires_at, is_active, license_key, hwid, device_count')
+    .select(
+      'id, plan, expires_at, is_active, license_key, hwid, device_name, device_count, max_devices'
+    )
     .eq('license_key', key)
     .eq('is_active', true)
     .maybeSingle();
@@ -138,49 +143,67 @@ export default async function handler(req, res) {
     }
   }
 
-  const bound = row.hwid != null && String(row.hwid).trim() !== '';
-  const storedHwid = bound ? String(row.hwid).trim() : '';
-  const mismatchMsg =
-    'This license is already registered to another device. Use the original PC or contact support.';
+  const maxD = Math.max(1, typeof row.max_devices === 'number' ? row.max_devices : 1);
 
+  let { data: devRows, error: devErr } = await supabase
+    .from('license_devices')
+    .select('id, hwid, device_name')
+    .eq('subscription_id', row.id);
+
+  if (devErr) {
+    console.error('verify license_devices', devErr);
+    return json(res, 500, { valid: false, message: 'Database error' });
+  }
+
+  if ((!devRows || devRows.length === 0) && row.hwid && String(row.hwid).trim()) {
+    const { error: legErr } = await supabase.from('license_devices').insert({
+      subscription_id: row.id,
+      hwid: String(row.hwid).trim(),
+      device_name: row.device_name && String(row.device_name).trim() ? String(row.device_name).trim() : null,
+    });
+    if (legErr && !String(legErr.message || '').includes('duplicate')) {
+      console.error('verify legacy sync', legErr);
+    }
+    const again = await supabase
+      .from('license_devices')
+      .select('id, hwid, device_name')
+      .eq('subscription_id', row.id);
+    devRows = again.data || [];
+  }
+
+  const devices = devRows || [];
+  const known = devices.find((d) => String(d.hwid).trim() === hwid);
   let firstActivation = false;
 
-  if (!bound) {
+  if (known) {
+    if (deviceName) {
+      await supabase
+        .from('license_devices')
+        .update({ device_name: deviceName })
+        .eq('id', known.id);
+    }
+  } else {
+    if (devices.length >= maxD) {
+      return json(res, 200, { valid: false, message: limitMsg });
+    }
     const nextCount = (typeof row.device_count === 'number' ? row.device_count : 0) + 1;
-    const bindPatch = {
-      hwid: hwid,
-      device_count: nextCount,
-    };
-    if (deviceName) bindPatch.device_name = deviceName;
-    const { data: updated, error: uErr } = await supabase
-      .from('subscriptions')
-      .update(bindPatch)
-      .eq('id', row.id)
-      .is('hwid', null)
-      .select('id')
-      .maybeSingle();
-
-    if (uErr) {
-      console.error('verify bind', uErr);
+    const { error: insErr } = await supabase.from('license_devices').insert({
+      subscription_id: row.id,
+      hwid,
+      device_name: deviceName || null,
+    });
+    if (insErr) {
+      console.error('verify insert device', insErr);
       return json(res, 500, { valid: false, message: 'Database error' });
     }
-
-    if (updated) {
-      firstActivation = true;
-    }
-
-    if (!updated) {
-      const { data: again, error: aErr } = await supabase
-        .from('subscriptions')
-        .select('hwid')
-        .eq('id', row.id)
-        .single();
-      if (aErr || String(again?.hwid || '').trim() !== hwid) {
-        return json(res, 200, { valid: false, message: mismatchMsg });
-      }
-    }
-  } else if (storedHwid !== hwid) {
-    return json(res, 200, { valid: false, message: mismatchMsg });
+    firstActivation = devices.length === 0;
+    await supabase
+      .from('subscriptions')
+      .update({
+        device_count: nextCount,
+        ...(deviceName ? { device_name: deviceName } : {}),
+      })
+      .eq('id', row.id);
   }
 
   const touchPatch = { last_verified_at: now.toISOString() };

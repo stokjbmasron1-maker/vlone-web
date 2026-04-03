@@ -87,9 +87,11 @@ export async function activateTrial(userId) {
     user_id: userId,
     plan: 'trial',
     tokens_paid: 0,
+    payment_method: 'free',
     started_at: new Date().toISOString(),
     expires_at: expiresAt,
     is_active: true,
+    max_devices: 1,
   })
   if (error) console.error('Trial activation error:', error)
 }

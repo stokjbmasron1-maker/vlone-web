@@ -8,9 +8,10 @@
 CREATE TABLE IF NOT EXISTS public.profiles (
   id          UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   username    TEXT UNIQUE NOT NULL,
-  pw_username TEXT,                          -- PixelWorlds in-game name
+  pw_username TEXT,
   email       TEXT UNIQUE NOT NULL,
-  is_new      BOOLEAN DEFAULT TRUE,          -- true if never had a paid sub
+  is_new      BOOLEAN DEFAULT TRUE,
+  vtokens     INTEGER NOT NULL DEFAULT 0,
   avatar_url  TEXT,
   discord     TEXT,
   created_at  TIMESTAMPTZ DEFAULT NOW(),
@@ -25,12 +26,39 @@ CREATE TABLE IF NOT EXISTS public.subscriptions (
   tokens_paid INTEGER DEFAULT 0,
   bgl_paid    NUMERIC(10,4) DEFAULT 0,
   payment_method TEXT CHECK (payment_method IN ('bgl','crypto','card','free')),
-  payment_ref TEXT,                          -- TX hash / BGL trade ID
+  payment_ref TEXT,
   started_at  TIMESTAMPTZ DEFAULT NOW(),
-  expires_at  TIMESTAMPTZ,                   -- NULL = lifetime
+  expires_at  TIMESTAMPTZ,
   is_active   BOOLEAN DEFAULT TRUE,
-  created_at  TIMESTAMPTZ DEFAULT NOW()
+  created_at  TIMESTAMPTZ DEFAULT NOW(),
+  license_key text,
+  hwid text,
+  last_verified_at timestamptz,
+  device_count int DEFAULT 0,
+  device_name text,
+  max_devices int NOT NULL DEFAULT 1
 );
+
+CREATE INDEX IF NOT EXISTS idx_subscriptions_license_key ON public.subscriptions(license_key);
+
+UPDATE public.subscriptions
+SET license_key = 'VLN-'
+  || UPPER(SUBSTRING(REPLACE(id::text, '-', ''), 1, 8))
+  || '-'
+  || UPPER(LEFT(plan, 3))
+WHERE license_key IS NULL;
+
+CREATE TABLE IF NOT EXISTS public.license_devices (
+  id uuid PRIMARY KEY DEFAULT gen_random_uuid(),
+  subscription_id uuid NOT NULL REFERENCES public.subscriptions(id) ON DELETE CASCADE,
+  hwid text NOT NULL,
+  device_name text,
+  created_at timestamptz NOT NULL DEFAULT now(),
+  CONSTRAINT license_devices_sub_hwid_unique UNIQUE (subscription_id, hwid)
+);
+
+CREATE INDEX IF NOT EXISTS idx_license_devices_subscription_id
+  ON public.license_devices(subscription_id);
 
 -- 3. KEYS TABLE (license keys generated per subscription)
 CREATE TABLE IF NOT EXISTS public.keys (
@@ -66,6 +94,7 @@ ALTER TABLE public.profiles        ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.subscriptions   ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.keys            ENABLE ROW LEVEL SECURITY;
 ALTER TABLE public.payment_requests ENABLE ROW LEVEL SECURITY;
+ALTER TABLE public.license_devices ENABLE ROW LEVEL SECURITY;
 
 -- Profiles: users can read/update their own
 CREATE POLICY "Users can view own profile"
@@ -77,6 +106,30 @@ CREATE POLICY "Users can update own profile"
 -- Subscriptions: users can view their own
 CREATE POLICY "Users can view own subscriptions"
   ON public.subscriptions FOR SELECT USING (auth.uid() = user_id);
+
+CREATE POLICY "Users can insert own subscriptions"
+  ON public.subscriptions FOR INSERT WITH CHECK (auth.uid() = user_id);
+
+CREATE POLICY "Users can update own subscriptions"
+  ON public.subscriptions FOR UPDATE USING (auth.uid() = user_id);
+
+CREATE POLICY "Users select own license_devices"
+  ON public.license_devices FOR SELECT
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.id = license_devices.subscription_id AND s.user_id = auth.uid()
+    )
+  );
+
+CREATE POLICY "Users delete own license_devices"
+  ON public.license_devices FOR DELETE
+  USING (
+    EXISTS (
+      SELECT 1 FROM public.subscriptions s
+      WHERE s.id = license_devices.subscription_id AND s.user_id = auth.uid()
+    )
+  );
 
 -- Keys: users can view their own keys
 CREATE POLICY "Users can view own keys"

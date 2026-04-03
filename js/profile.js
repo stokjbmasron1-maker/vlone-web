@@ -7,8 +7,8 @@ let _selectedVT = 50;
 let _selectedBGL = 1.5;
 let _botStates = {};
 
-// Valid payment_method accepted by DB constraint. 'bgl' is used for VToken purchases.
 const PM_VTOKENS = 'bgl';
+const DEVICE_SLOT_PRICE = 50;
 
 async function waitForSB(ms = 5000) {
   const t = Date.now();
@@ -36,20 +36,42 @@ function escHtml(t) {
     .replace(/'/g, '&#39;');
 }
 
+function deviceSlotsUsedMax(s) {
+  const list = Array.isArray(s.license_devices) ? s.license_devices : [];
+  const used = list.length > 0 ? list.length : s.hwid && String(s.hwid).trim() ? 1 : 0;
+  const max = Math.max(1, typeof s.max_devices === 'number' ? s.max_devices : 1);
+  return { used, max, list };
+}
+
 function linkedDevicesForSubscription(s) {
   const rows = [];
+  const list = Array.isArray(s.license_devices) ? s.license_devices : [];
+  if (list.length) {
+    list.forEach((d) => {
+      const name = (d.device_name && String(d.device_name).trim()) || 'Device';
+      const hw = d.hwid && String(d.hwid).trim();
+      let sub = '';
+      if (hw) {
+        if (hw.startsWith('pc-')) sub = 'PC: ' + hw.slice(3);
+        else if (hw.startsWith('mg-')) sub = 'Windows · …' + hw.slice(-12);
+        else sub = hw.length > 48 ? hw.slice(0, 46) + '…' : hw;
+      }
+      rows.push({ id: d.id, title: name, sub });
+    });
+    return rows;
+  }
   const dn = s.device_name && String(s.device_name).trim();
   const hw = s.hwid && String(s.hwid).trim();
   if (dn) {
-    rows.push({ title: dn, sub: hw ? 'Saved when this PC verified the license.' : '' });
-  }
-  if (hw && !dn) {
+    rows.push({ id: null, title: dn, sub: hw ? 'Saved when this PC verified the license.' : '' });
+  } else if (hw) {
     if (hw.startsWith('pc-')) {
-      rows.push({ title: hw.slice(3), sub: 'PC name (from client HWID)' });
+      rows.push({ id: null, title: hw.slice(3), sub: 'PC name (from client HWID)' });
     } else if (hw.startsWith('mg-')) {
-      rows.push({ title: 'Windows PC', sub: 'Machine ID …' + hw.slice(-14) });
+      rows.push({ id: null, title: 'Windows PC', sub: 'Machine ID …' + hw.slice(-14) });
     } else {
       rows.push({
+        id: null,
         title: 'Linked device',
         sub: hw.length > 56 ? hw.slice(0, 56) + '…' : hw,
       });
@@ -57,6 +79,7 @@ function linkedDevicesForSubscription(s) {
   }
   if (rows.length === 0) {
     rows.push({
+      id: null,
       title: 'No device linked yet',
       sub: 'Open the VLONE client on your PC and verify this key once.',
     });
@@ -82,10 +105,16 @@ function openKeyInfoModal(subId) {
   } else {
     expLine = new Date(s.expires_at).toLocaleString('en-US', { dateStyle: 'medium', timeStyle: 'short' });
   }
+  const { used: slotUsed, max: slotMax } = deviceSlotsUsedMax(s);
   const devices = linkedDevicesForSubscription(s);
   const devHtml = devices
-    .map(
-      (d) => `
+    .map((d) => {
+      const rm = d.id
+        ? `<button type="button" class="key-copy" style="margin-top:8px;font-size:10px" onclick="removeLicenseDeviceRow(${JSON.stringify(
+            d.id
+          )})"><i class="fas fa-trash"></i> Remove device</button>`
+        : '';
+      return `
     <div style="background:rgba(6,182,212,.06);border:1px solid rgba(6,182,212,.15);border-radius:10px;padding:10px 12px;margin-bottom:8px">
       <div style="font-weight:700;font-size:14px;color:var(--t1)">${escHtml(d.title)}</div>
       ${
@@ -93,8 +122,9 @@ function openKeyInfoModal(subId) {
           ? `<div style="font-size:11px;color:var(--t2);margin-top:4px;line-height:1.45">${escHtml(d.sub)}</div>`
           : ''
       }
-    </div>`
-    )
+      ${rm}
+    </div>`;
+    })
     .join('');
 
   const inner = document.getElementById('key-info-inner');
@@ -113,12 +143,13 @@ function openKeyInfoModal(subId) {
       <div><span style="color:var(--t2)">Plan:</span> <strong>${escHtml(planLbl)}</strong></div>
       <div><span style="color:var(--t2)">Access / expiry:</span> <strong>${escHtml(expLine)}</strong></div>
       <div><span style="color:var(--t2)">Activation count:</span> <strong>${typeof s.device_count === 'number' ? s.device_count : s.hwid ? 1 : 0}</strong></div>
+      <div><span style="color:var(--t2)">Device slots:</span> <strong>${slotUsed} / ${slotMax}</strong> used</div>
     </div>
-    <div style="font-size:11px;color:var(--t2);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px"><i class="fas fa-desktop"></i> Linked device name</div>
+    <div style="font-size:11px;color:var(--t2);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.4px"><i class="fas fa-desktop"></i> Linked devices</div>
     <div style="margin-bottom:8px">${devHtml}</div>
     <div class="modal-note" style="margin-top:14px">
       <i class="fas fa-info-circle"></i>
-      Each key is tied to one PC. The device name is your Windows computer name when you verify in the VLONE client.
+      Default is 1 device per key. Buy extra slots (${DEVICE_SLOT_PRICE} VT each) on the key card. Remove a device here to free a slot for another PC.
     </div>
     <div style="text-align:center;margin-top:16px">
       <button type="button" onclick="closeKeyInfoModal()" class="submit-btn" style="max-width:220px;margin:0 auto;display:block"><i class="fas fa-check"></i> Close</button>
@@ -152,7 +183,9 @@ async function loadProfile() {
       profile = p;
 
       const { data: subsData } = await _sbInst.from('subscriptions')
-        .select('*').eq('user_id', user.id).eq('is_active', true)
+        .select('*, license_devices(id, hwid, device_name, created_at)')
+        .eq('user_id', user.id)
+        .eq('is_active', true)
         .order('expires_at', { ascending: false });
       subs = subsData || [];
     } else {
@@ -346,6 +379,17 @@ function renderProfile(user, profile, subs) {
     function makeKeyCard(s, i, total) {
       const kv = makeKey(s);
       const isOnly = total === 1;
+      const { used: du, max: dm } = deviceSlotsUsedMax(s);
+      const slotLabel = `Devices ${du}/${dm}`;
+      const primaryName =
+        Array.isArray(s.license_devices) && s.license_devices.length
+          ? (s.license_devices[0].device_name && String(s.license_devices[0].device_name).trim()) ||
+            'Device'
+          : s.device_name && String(s.device_name).trim()
+            ? String(s.device_name).trim().slice(0, 28)
+            : du > 0
+              ? slotLabel
+              : 'None yet';
       return `
         <div style="${isOnly ? '' : 'background:rgba(168,85,247,.04);border:1px solid rgba(168,85,247,.12);border-radius:12px;padding:14px;margin-bottom:10px'}">
           ${!isOnly ? `<div style="font-size:11px;color:var(--t2);font-weight:700;margin-bottom:8px;text-transform:uppercase;letter-spacing:.5px;display:flex;align-items:center;gap:5px">
@@ -356,19 +400,14 @@ function renderProfile(user, profile, subs) {
             <div style="display:flex;gap:6px;flex-shrink:0;flex-wrap:wrap">
               <button type="button" class="key-copy" onclick="copyText('${kv}')"><i class="fas fa-copy"></i> Copy</button>
               <button type="button" class="key-copy" onclick="openKeyInfoModal('${s.id}')" title="License and device info"><i class="fas fa-circle-info"></i> Info</button>
+              <button type="button" class="key-copy" onclick="purchaseExtraDeviceSlot('${s.id}')" title="Add one device slot"><i class="fas fa-plus"></i> +Slot (${DEVICE_SLOT_PRICE} VT)</button>
             </div>
           </div>
           <div class="key-info-row" style="margin-top:8px;flex-wrap:wrap;gap:6px">
             <div class="key-chip"><i class="fas fa-circle" style="color:var(--g)"></i> Active — ${kpl[s.plan]||s.plan}</div>
             ${makeDurationChip(s)}
             ${makeExpChip(s)}
-            <div class="key-chip" style="color:var(--t2);border-color:rgba(148,163,184,.15)"><i class="fas fa-desktop"></i> ${
-              s.hwid
-                ? s.device_name && String(s.device_name).trim()
-                  ? escHtml(String(s.device_name).trim().slice(0, 28)) + (String(s.device_name).trim().length > 28 ? '…' : '')
-                  : `Device bound (${s.device_count ?? 1})`
-                : 'Device: activate in client'
-            }</div>
+            <div class="key-chip" style="color:var(--t2);border-color:rgba(148,163,184,.15)"><i class="fas fa-desktop"></i> ${escHtml(slotLabel)} — ${escHtml(primaryName)}</div>
             <div class="key-chip"><i class="fas fa-shield-halved" style="color:var(--g)"></i> Undetected</div>
           </div>
         </div>`;
@@ -478,7 +517,7 @@ let _existingSubForChoice = null;
 let _allSubsForChoice = [];  // all active subs fetched for picker
 
 const PLANS = {
-  daily:    { label:'Daily',    price:10,  duration:'1 Day',   short:'DAI' },
+  daily:    { label:'Daily',    price:67,  duration:'1 Day',   short:'DAI' },
   monthly:  { label:'Monthly',  price:299, duration:'30 Days', short:'MON' },
   lifetime: { label:'Lifetime', price:499, duration:'Forever', short:'LIF' },
 };
@@ -697,10 +736,18 @@ async function execPlanPurchase(mode) {
 
     if (!isExtend) {
       const { data: newRow, error: insErr } = await _sbInst.from('subscriptions')
-        .insert({ user_id:_currentUserId, plan:_planMeta.label.toLowerCase(),
-          tokens_paid:_planMeta.price, payment_method: PM_VTOKENS, is_active:true,
-          started_at:now.toISOString(), expires_at:expiresAt })
-        .select('id').single();
+        .insert({
+          user_id: _currentUserId,
+          plan: _planMeta.label.toLowerCase(),
+          tokens_paid: _planMeta.price,
+          payment_method: PM_VTOKENS,
+          is_active: true,
+          started_at: now.toISOString(),
+          expires_at: expiresAt,
+          max_devices: 1,
+        })
+        .select('id')
+        .single();
       if (insErr) throw new Error('Failed to create subscription: ' + insErr.message);
       licKey = subKey(newRow.id, _planMeta.label.toLowerCase());
       const { error: lkErr } = await _sbInst
@@ -712,9 +759,12 @@ async function execPlanPurchase(mode) {
 
     // Log payment
     const { error: payErr } = await _sbInst.from('payment_requests').insert({
-      user_id:_currentUserId, amount_tokens:_planMeta.price, payment_method: PM_VTOKENS,
-      reference_data: JSON.stringify({ plan:_planMeta.label, key:licKey, mode:isExtend?'extend':'new' }),
-      status:'completed'
+      user_id: _currentUserId,
+      plan: _planMeta.label.toLowerCase(),
+      tokens: _planMeta.price,
+      method: PM_VTOKENS,
+      reference: JSON.stringify({ plan: _planMeta.label, key: licKey, mode: isExtend ? 'extend' : 'new' }),
+      status: 'approved',
     });
     if (payErr) console.warn('Payment log:', payErr.message);
 
@@ -824,9 +874,12 @@ async function submitVTRequest() {
   try {
     if (_sbInst && _currentUserId) {
       await _sbInst.from('payment_requests').insert({
-        user_id: _currentUserId, amount_bgl: _selectedBGL, amount_tokens: _selectedVT,
-        payment_method: payData.method || 'bgl',
-        reference_data: JSON.stringify(payData), status:'pending'
+        user_id: _currentUserId,
+        plan: 'vtokens',
+        tokens: _selectedVT,
+        method: payData.method || 'bgl',
+        reference: JSON.stringify({ ...payData, bgl: _selectedBGL }),
+        status: 'pending',
       });
     }
     showToast('✅ Request sent! Admin will verify in 5-30 minutes.');
@@ -839,6 +892,56 @@ async function submitVTRequest() {
 // ─────────────────────────────────────────
 // UTILITIES
 // ─────────────────────────────────────────
+async function purchaseExtraDeviceSlot(subId) {
+  if (!_sbInst) {
+    showToast('Sign in required.');
+    return;
+  }
+  if (_currentVT < DEVICE_SLOT_PRICE) {
+    showToast(`You need ${DEVICE_SLOT_PRICE} VT.`);
+    return;
+  }
+  const { data, error } = await _sbInst.rpc('purchase_extra_device_slot', { target_sub: subId });
+  if (error) {
+    showToast(error.message);
+    return;
+  }
+  let r = data;
+  if (typeof r === 'string') {
+    try {
+      r = JSON.parse(r);
+    } catch (_) {}
+  }
+  if (r && r.ok === false) {
+    showToast(r.error || 'Could not add slot');
+    return;
+  }
+  showToast('Extra device slot added.');
+  location.reload();
+}
+
+async function removeLicenseDeviceRow(deviceRowId) {
+  if (!_sbInst || !deviceRowId) return;
+  if (!confirm('Remove this device? You can register another PC later if you have a free slot.')) return;
+  const { data, error } = await _sbInst.rpc('remove_license_device_by_id', { device_row: deviceRowId });
+  if (error) {
+    showToast(error.message);
+    return;
+  }
+  let r = data;
+  if (typeof r === 'string') {
+    try {
+      r = JSON.parse(r);
+    } catch (_) {}
+  }
+  if (r && r.ok === false) {
+    showToast(r.error || 'Could not remove device');
+    return;
+  }
+  showToast('Device removed.');
+  location.reload();
+}
+
 function copyText(text) { navigator.clipboard.writeText(text).then(() => showToast('✅ Copied!')); }
 
 async function doLogout() {

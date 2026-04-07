@@ -22,12 +22,12 @@ export const supabase = createClient(SUPABASE_URL, SUPABASE_ANON_KEY, {
 // =====================================================
 
 /** Register new user */
-export async function signUp({ email, password, username, pwUsername }) {
+export async function signUp({ email, password, username }) {
   const { data, error } = await supabase.auth.signUp({
     email,
     password,
     options: {
-      data: { username, pw_username: pwUsername }
+      data: { username }
     }
   })
   if (error) throw error
@@ -37,7 +37,6 @@ export async function signUp({ email, password, username, pwUsername }) {
     const { error: profileError } = await supabase.from('profiles').insert({
       id: data.user.id,
       username,
-      pw_username: pwUsername,
       email,
       is_new: true,
     })

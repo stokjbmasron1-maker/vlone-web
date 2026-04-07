@@ -8,7 +8,6 @@
 CREATE TABLE IF NOT EXISTS public.profiles (
   id          UUID REFERENCES auth.users(id) ON DELETE CASCADE PRIMARY KEY,
   username    TEXT UNIQUE NOT NULL,
-  pw_username TEXT,
   email       TEXT UNIQUE NOT NULL,
   is_new      BOOLEAN DEFAULT TRUE,
   vtokens     INTEGER NOT NULL DEFAULT 0,
@@ -189,7 +188,6 @@ SELECT
   p.id,
   p.username,
   p.email,
-  p.pw_username,
   s.plan,
   s.expires_at,
   s.tokens_paid,

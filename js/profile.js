@@ -109,13 +109,13 @@ function openDeviceSlotConfirmModal(subId) {
   const er = document.getElementById('slot-confirm-err');
   if (tx) {
     tx.innerHTML = `Add <strong>1 device slot</strong> for this license.<br><br>
-      Cost: <strong>${DEVICE_SLOT_PRICE} VT</strong><br>
-      Your balance: <strong>${_currentVT} VT</strong><br>
-      After purchase: <strong>${after} VT</strong>`;
+      Cost: <strong>${DEVICE_SLOT_PRICE} XT</strong><br>
+      Your balance: <strong>${_currentVT} XT</strong><br>
+      After purchase: <strong>${after} XT</strong>`;
   }
   if (er) {
     er.style.display = low ? 'block' : 'none';
-    er.textContent = low ? `You need ${DEVICE_SLOT_PRICE - _currentVT} more VT.` : '';
+    er.textContent = low ? `You need ${DEVICE_SLOT_PRICE - _currentVT} more XT.` : '';
   }
   const okBtn = document.getElementById('slot-confirm-ok');
   if (okBtn) {
@@ -195,7 +195,7 @@ function openKeyInfoModal(subId) {
     <div style="margin-bottom:8px">${devHtml}</div>
     <div class="modal-note" style="margin-top:14px">
       <i class="fas fa-info-circle"></i>
-      Default is 1 device per key. Use <strong>Add slot</strong> above for +1 device (${DEVICE_SLOT_PRICE} VT). Remove a device below to free a slot for another PC.
+      Default is 1 device per key. Use <strong>Add slot</strong> above for +1 device (${DEVICE_SLOT_PRICE} XT). Remove a device below to free a slot for another PC.
     </div>
     <div style="text-align:center;margin-top:16px">
       <button type="button" onclick="closeKeyInfoModal()" class="submit-btn" style="max-width:220px;margin:0 auto;display:block"><i class="fas fa-check"></i> Close</button>
@@ -241,8 +241,8 @@ async function loadProfile() {
       } else {
         const ls = JSON.parse(localStorage.getItem('codex_session') || 'null');
         if (!ls) { location.href = 'auth.html'; return; }
-        user = { email: ls.email, user_metadata: { username: ls.username, pw_username: ls.pwUsername }, created_at: new Date(ls.createdAt).toISOString() };
-        profile = { username: ls.username, email: ls.email, pw_username: ls.pwUsername, vtokens: 0, created_at: user.created_at };
+        user = { email: ls.email, user_metadata: { username: ls.username }, created_at: new Date(ls.createdAt).toISOString() };
+        profile = { username: ls.username, email: ls.email, vtokens: 0, created_at: user.created_at };
       }
     }
 
@@ -263,7 +263,6 @@ function renderProfile(user, profile, subs) {
   const sub = subs && subs.length > 0 ? subs[0] : null;
   const username  = (profile && profile.username) || (user.user_metadata || {}).username || user.email.split('@')[0];
   const email     = user.email;
-  const pwUsername = (profile && profile.pw_username) || (user.user_metadata || {}).pw_username || '—';
   const joinDate  = new Date((profile && profile.created_at) || user.created_at);
   const vtokens   = (profile && profile.vtokens) || 0;
   _currentVT = vtokens;
@@ -279,7 +278,6 @@ function renderProfile(user, profile, subs) {
   document.getElementById('prof-name').textContent  = username;
   document.getElementById('prof-email').textContent = email;
   document.getElementById('info-user').textContent  = username;
-  document.getElementById('info-pw').textContent    = pwUsername;
   document.getElementById('info-date').textContent  = joinDate.toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'});
   document.getElementById('join-badge').innerHTML   = `<i class="fas fa-calendar"></i> ${joinDate.toLocaleDateString('en-US',{month:'short',year:'numeric'})}`;
 
@@ -292,16 +290,16 @@ function renderProfile(user, profile, subs) {
     if (vtBtn) {
       vtBtn.outerHTML = `
         <button class="vt-buy" id="vt-action-btn" onclick="devAddTokens()" style="color:var(--g)">
-          <i class="fas fa-flask"></i><span>Add 500 VT <span style="font-size:9px;opacity:.7">(Dev)</span></span>
+          <i class="fas fa-flask"></i><span>Add 500 XT <span style="font-size:9px;opacity:.7">(Dev)</span></span>
         </button>
         <button class="vt-buy" onclick="devResetTokens()" style="color:var(--r)">
-          <i class="fas fa-rotate-left"></i><span>Reset VT <span style="font-size:9px;opacity:.7">(Dev)</span></span>
+          <i class="fas fa-rotate-left"></i><span>Reset XT <span style="font-size:9px;opacity:.7">(Dev)</span></span>
         </button>`;
     }
   }
 
   // X-Tokens
-  document.getElementById('vt-num').innerHTML = `${vtokens} <span style="font-size:12px;color:var(--t2)">VT</span>`;
+  document.getElementById('vt-num').innerHTML = `${vtokens} <span style="font-size:12px;color:var(--t2)">XT</span>`;
   if (vtokens === 0) {
     document.getElementById('vt-notice').style.display = 'block';
     document.getElementById('vt-num').style.color = '#fcd34d';
@@ -537,10 +535,10 @@ async function devAddTokens() {
   const { data, error } = await _sbInst.from('profiles').update({ vtokens: newTotal }).eq('id', _currentUserId).select('vtokens').single();
   if (error) { showToast('Error: ' + error.message); return; }
   _currentVT = data.vtokens;
-  document.getElementById('vt-num').innerHTML = `${data.vtokens} <span style="font-size:12px;color:var(--t2)">VT</span>`;
+  document.getElementById('vt-num').innerHTML = `${data.vtokens} <span style="font-size:12px;color:var(--t2)">XT</span>`;
   document.getElementById('vt-num').style.color = '';
   document.getElementById('vt-notice').style.display = 'none';
-  showToast('🔧 Dev: +500 VT added! Total: ' + data.vtokens + ' VT');
+  showToast('🔧 Dev: +500 XT added! Total: ' + data.vtokens + ' XT');
 }
 
 async function devResetTokens() {
@@ -548,10 +546,10 @@ async function devResetTokens() {
   const { data, error } = await _sbInst.from('profiles').update({ vtokens: 0 }).eq('id', _currentUserId).select('vtokens').single();
   if (error) { showToast('Error: ' + error.message); return; }
   _currentVT = 0;
-  document.getElementById('vt-num').innerHTML = `0 <span style="font-size:12px;color:var(--t2)">VT</span>`;
+  document.getElementById('vt-num').innerHTML = `0 <span style="font-size:12px;color:var(--t2)">XT</span>`;
   document.getElementById('vt-num').style.color = '#fcd34d';
   document.getElementById('vt-notice').style.display = 'block';
-  showToast('🔧 Dev: VT reset to 0');
+  showToast('🔧 Dev: XT reset to 0');
 }
 
 // ─────────────────────────────────────────
@@ -582,11 +580,11 @@ function openPlanModal(plan) {
     </div>
     <div style="background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.15);border-radius:12px;padding:16px;margin-bottom:14px">
       <div class="pm-row"><span class="pm-lbl">Plan</span><span style="font-weight:700;font-size:14px" id="pm-plan">${_planMeta.label} — ${_planMeta.duration}</span></div>
-      <div class="pm-row"><span class="pm-lbl">Price</span><span style="font-weight:700;color:var(--p);font-size:15px;font-family:'Orbitron',monospace" id="pm-price">${_planMeta.price} VT</span></div>
-      <div class="pm-row"><span class="pm-lbl">Your Balance</span><span style="font-weight:600;font-size:13px;color:${canAfford ? 'var(--t1)' : '#fca5a5'}" id="pm-balance">${_currentVT} VT</span></div>
+      <div class="pm-row"><span class="pm-lbl">Price</span><span style="font-weight:700;color:var(--p);font-size:15px;font-family:'Orbitron',monospace" id="pm-price">${_planMeta.price} XT</span></div>
+      <div class="pm-row"><span class="pm-lbl">Your Balance</span><span style="font-weight:600;font-size:13px;color:${canAfford ? 'var(--t1)' : '#fca5a5'}" id="pm-balance">${_currentVT} XT</span></div>
       <div style="border-top:1px solid rgba(168,85,247,.12);padding-top:11px" class="pm-row">
         <span class="pm-lbl">After Purchase</span>
-        <span style="font-weight:700;font-size:14px;color:${canAfford ? 'var(--g)' : '#fca5a5'}" id="pm-after">${afterBal} VT</span>
+        <span style="font-weight:700;font-size:14px;color:${canAfford ? 'var(--g)' : '#fca5a5'}" id="pm-after">${afterBal} XT</span>
       </div>
     </div>
     <div id="pm-error" style="display:${canAfford ? 'none' : 'block'};background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 12px;font-size:12px;color:#fca5a5;margin-bottom:12px;text-align:center">${canAfford ? '' : '⚠️ Not enough X-Tokens. You need ' + (_planMeta.price - _currentVT) + ' more XT.'}</div>
@@ -815,7 +813,7 @@ async function execPlanPurchase(mode) {
 
     _currentVT = newVT;
     _existingSubForChoice = null;
-    document.getElementById('vt-num').innerHTML = `${newVT} <span style="font-size:12px;color:var(--t2)">VT</span>`;
+    document.getElementById('vt-num').innerHTML = `${newVT} <span style="font-size:12px;color:var(--t2)">XT</span>`;
 
     const expLabel = expiresAt
       ? 'Expires: <strong>' + new Date(expiresAt).toLocaleDateString('en-US',{day:'numeric',month:'short',year:'numeric'}) + '</strong>'
@@ -943,7 +941,7 @@ async function purchaseExtraDeviceSlot(subId) {
     return;
   }
   if (_currentVT < DEVICE_SLOT_PRICE) {
-    showToast(`You need ${DEVICE_SLOT_PRICE} VT.`);
+    showToast(`You need ${DEVICE_SLOT_PRICE} XT.`);
     return;
   }
   const { data, error } = await _sbInst.rpc('purchase_extra_device_slot', { target_sub: subId });

@@ -117,8 +117,7 @@ async function doRegister() {
   var user  = document.getElementById('r-user').value.trim();
   var email = document.getElementById('r-email').value.trim();
   var pass  = document.getElementById('r-pass').value;
-  var pw    = document.getElementById('r-pw').value.trim();
-  if (!user||!email||!pass||!pw) { showMsg('Please fill in all fields.'); return; }
+  if (!user||!email||!pass) { showMsg('Please fill in all fields.'); return; }
   if (user.length < 2 || user.length > 32) { showMsg('Username must be 2–32 characters.'); return; }
   if (!/^[a-zA-Z0-9_]+$/.test(user)) { showMsg('Username: letters, numbers, and underscore only.'); return; }
   if (pass.length < 6) { showMsg('Password must be at least 6 characters.'); return; }
@@ -135,7 +134,7 @@ async function doRegister() {
         return;
       }
       if (chk.data === false) { showMsg('Username already taken.'); setLoading('reg-btn','reg-spin','reg-icon',false); return; }
-      var r = await sb.auth.signUp({ email, password: pass, options:{ data:{ username:user, pw_username:pw } } });
+      var r = await sb.auth.signUp({ email, password: pass, options:{ data:{ username:user } } });
       if (r.error) throw r.error;
       await new Promise(function(w){ setTimeout(w,1000); });
       try {
@@ -150,7 +149,7 @@ async function doRegister() {
       if (Object.values(users).find(function(u){ return u.username===user; })) { showMsg('Username already taken.'); setLoading('reg-btn','reg-spin','reg-icon',false); return; }
       if (Object.values(users).find(function(u){ return u.email===email; }))   { showMsg('Email already Registered'); setLoading('reg-btn','reg-spin','reg-icon',false); return; }
       var uid = 'u_'+Date.now();
-      var nu = { uid, username:user, email, password:btoa(pass), pwUsername:pw, createdAt:Date.now() };
+      var nu = { uid, username:user, email, password:btoa(pass), createdAt:Date.now() };
       users[uid]=nu; saveUsers(users); setLocalSess(nu);
       showMsg('✅ Account created! Activating your free trial...','ok');
       setTimeout(function(){ location.href='store.html?trial=activated'; },1800);

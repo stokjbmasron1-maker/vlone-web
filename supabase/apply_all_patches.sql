@@ -11,8 +11,6 @@
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS vtokens integer NOT NULL DEFAULT 0;
 
-ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS pw_username text;
 
 -- Subscriptions: license verify API + profile “Manage Keys”
 ALTER TABLE public.subscriptions
@@ -35,7 +33,7 @@ SET license_key = 'CODEX-'
   || UPPER(LEFT(plan, 3))
 WHERE license_key IS NULL;
 
--- RLS: without these, INSERT/UPDATE subscriptions from the browser (trial, VT purchase) fails.
+-- RLS: without these, INSERT/UPDATE subscriptions from the browser (trial, XT purchase) fails.
 DROP POLICY IF EXISTS "Users can insert own subscriptions" ON public.subscriptions;
 CREATE POLICY "Users can insert own subscriptions"
   ON public.subscriptions FOR INSERT

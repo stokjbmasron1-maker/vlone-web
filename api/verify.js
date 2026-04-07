@@ -59,7 +59,7 @@ function signSessionJwt(payload, secret) {
 }
 
 const limitMsg =
-  'Device limit reached for this license. Remove a device in your profile or buy an extra device slot (50 VT).';
+  'Device limit reached for this license. Remove a device in your profile or buy an extra device slot (50 XT).';
 
 export default async function handler(req, res) {
   if (req.method === 'OPTIONS') {

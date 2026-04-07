@@ -57,7 +57,7 @@ window._sb = createClient(
           <div class="vt-icon"><i class="fas fa-coins"></i></div>
           <div>
             <div class="vt-lbl">X-Token</div>
-            <div class="vt-num" id="vt-num">0 <span style="font-size:12px;color:var(--t2)">VT</span></div>
+            <div class="vt-num" id="vt-num">0 <span style="font-size:12px;color:var(--t2)">XT</span></div>
           </div>
         </div>
         <button class="vt-buy" id="vt-action-btn" onclick="openVTModal()">
@@ -106,10 +106,6 @@ window._sb = createClient(
             <div><div class="stat-lbl">Username</div><div class="stat-val" id="info-user">—</div></div>
           </div>
           <div class="stat-item">
-            <div class="stat-icon"><i class="fas fa-gamepad"></i></div>
-            <div><div class="stat-lbl">PixelWorlds IGN</div><div class="stat-val" id="info-pw">—</div></div>
-          </div>
-          <div class="stat-item">
             <div class="stat-icon"><i class="fas fa-calendar-plus"></i></div>
             <div><div class="stat-lbl">Member Since</div><div class="stat-val" id="info-date">—</div></div>
           </div>
@@ -144,7 +140,7 @@ window._sb = createClient(
     <div class="upgrade-banner" id="upgrade-banner" style="display:none">
       <div class="upgrade-text">
         <h3>🚀 Upgrade to Lifetime</h3>
-        <p>499 VT — Pay once, play forever. ≈ 13 BGL / ~$5</p>
+        <p>499 XT — Pay once, play forever. ≈ 13 BGL / ~$5</p>
       </div>
       <button class="btn btn-grad" onclick="openVTModal()"><i class="fas fa-crown"></i> Upgrade Now</button>
     </div>
@@ -217,15 +213,15 @@ window._sb = createClient(
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
         <span style="color:var(--t2);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Price</span>
-        <span style="font-weight:700;color:var(--p);font-size:15px;font-family:'Orbitron',monospace" id="pm-price">299 VT</span>
+        <span style="font-weight:700;color:var(--p);font-size:15px;font-family:'Orbitron',monospace" id="pm-price">299 XT</span>
       </div>
       <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:11px">
         <span style="color:var(--t2);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">Your Balance</span>
-        <span style="font-weight:600;font-size:13px" id="pm-balance">0 VT</span>
+        <span style="font-weight:600;font-size:13px" id="pm-balance">0 XT</span>
       </div>
       <div style="border-top:1px solid rgba(168,85,247,.12);padding-top:12px;display:flex;justify-content:space-between;align-items:center">
         <span style="color:var(--t2);font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px">After Purchase</span>
-        <span style="font-weight:700;font-size:14px;color:var(--g)" id="pm-after">0 VT</span>
+        <span style="font-weight:700;font-size:14px;color:var(--g)" id="pm-after">0 XT</span>
       </div>
     </div>
 
@@ -256,12 +252,12 @@ window._sb = createClient(
     <div class="modal-sub">1 X-Token ≈ 0.027 BGL • 67 XT = 1 day • 299 XT = 1 month • 499 XT = lifetime • 50 XT = +1 device slot</div>
 
     <div class="amt-grid" id="amt-grid">
-      <div class="amt-card sel" data-vt="50"   data-bgl="1.5"><div class="amt-vt">50 VT</div><div class="amt-bgl">≈ 1.5 BGL</div></div>
-      <div class="amt-card"     data-vt="150"  data-bgl="4">  <div class="amt-vt">150 VT</div><div class="amt-bgl">≈ 4 BGL</div><div class="amt-bonus">+10 bonus</div></div>
-      <div class="amt-card"     data-vt="300"  data-bgl="8">  <div class="amt-vt">300 VT</div><div class="amt-bgl">≈ 8 BGL</div><div class="amt-bonus">+30 bonus</div></div>
-      <div class="amt-card"     data-vt="520"  data-bgl="13"> <div class="amt-vt">520 VT</div><div class="amt-bgl">≈ 13 BGL</div><div class="amt-bonus">+50 bonus 🔥</div></div>
-      <div class="amt-card"     data-vt="1100" data-bgl="27"> <div class="amt-vt">1100 VT</div><div class="amt-bgl">≈ 27 BGL</div><div class="amt-bonus">+150 bonus 💎</div></div>
-      <div class="amt-card"     data-vt="2500" data-bgl="60"> <div class="amt-vt">2500 VT</div><div class="amt-bgl">≈ 60 BGL</div><div class="amt-bonus">+400 bonus 👑</div></div>
+      <div class="amt-card sel" data-vt="50"   data-bgl="1.5"><div class="amt-vt">50 XT</div><div class="amt-bgl">≈ 1.5 BGL</div></div>
+      <div class="amt-card"     data-vt="150"  data-bgl="4">  <div class="amt-vt">150 XT</div><div class="amt-bgl">≈ 4 BGL</div><div class="amt-bonus">+10 bonus</div></div>
+      <div class="amt-card"     data-vt="300"  data-bgl="8">  <div class="amt-vt">300 XT</div><div class="amt-bgl">≈ 8 BGL</div><div class="amt-bonus">+30 bonus</div></div>
+      <div class="amt-card"     data-vt="520"  data-bgl="13"> <div class="amt-vt">520 XT</div><div class="amt-bgl">≈ 13 BGL</div><div class="amt-bonus">+50 bonus 🔥</div></div>
+      <div class="amt-card"     data-vt="1100" data-bgl="27"> <div class="amt-vt">1100 XT</div><div class="amt-bgl">≈ 27 BGL</div><div class="amt-bonus">+150 bonus 💎</div></div>
+      <div class="amt-card"     data-vt="2500" data-bgl="60"> <div class="amt-vt">2500 XT</div><div class="amt-bgl">≈ 60 BGL</div><div class="amt-bonus">+400 bonus 👑</div></div>
     </div>
 
     <div class="pay-tabs">

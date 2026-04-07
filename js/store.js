@@ -119,7 +119,7 @@ window.addEventListener('load', async () => {
     _storeUserId = uid;
 
     document.getElementById('nav-vt').style.display  = 'flex';
-    document.getElementById('nav-vt-num').textContent = vt + ' VT';
+    document.getElementById('nav-vt-num').textContent = vt + ' XT';
 
     updatePricingCards(vt, topSub);
   } catch(e) { console.warn('User data load failed:', e); }
@@ -150,10 +150,10 @@ function updatePricingCards(vt, sub) {
       // Logged in (any state) — show buy 1 day
       trialBtn.disabled=false; trialBtn.style.cssText='';
       if (vt >= 67) {
-        trialBtn.innerHTML='<i class="fas fa-coins"></i> Buy 1 Day (67 VT)';
+        trialBtn.innerHTML='<i class="fas fa-coins"></i> Buy 1 Day (67 XT)';
         trialBtn.onclick=()=>sOpenPlan('daily');
       } else {
-        trialBtn.innerHTML=`<i class="fas fa-coins"></i> Need ${67-vt} more VT`;
+        trialBtn.innerHTML=`<i class="fas fa-coins"></i> Need ${67-vt} more XT`;
         trialBtn.style.opacity='0.7'; trialBtn.style.pointerEvents='none';
       }
     }
@@ -164,11 +164,11 @@ function updatePricingCards(vt, sub) {
   if (monthBtn) {
     if (!_storeUserId) { monthBtn.onclick=()=>{localStorage.setItem('codex_redirect','store.html#pricing');location.href='auth.html';}; }
     else if (vt >= 299) {
-      monthBtn.innerHTML='<i class="fas fa-coins"></i> Buy Monthly (299 VT)';
+      monthBtn.innerHTML='<i class="fas fa-coins"></i> Buy Monthly (299 XT)';
       monthBtn.disabled=false; monthBtn.style.opacity=''; monthBtn.style.pointerEvents='';
       monthBtn.onclick=()=>sOpenPlan('monthly');
     } else {
-      monthBtn.innerHTML=`<i class="fas fa-coins"></i> Need ${299-vt} more VT`;
+      monthBtn.innerHTML=`<i class="fas fa-coins"></i> Need ${299-vt} more XT`;
       monthBtn.style.opacity='0.7'; monthBtn.style.pointerEvents='none';
       monthBtn.onclick=()=>location.href='profile.html?buy=1';
     }
@@ -179,11 +179,11 @@ function updatePricingCards(vt, sub) {
   if (lifeBtn) {
     if (!_storeUserId) { lifeBtn.onclick=()=>{localStorage.setItem('codex_redirect','store.html#pricing');location.href='auth.html';}; }
     else if (vt >= 499) {
-      lifeBtn.innerHTML='<i class="fas fa-crown"></i> Buy Lifetime (499 VT)';
+      lifeBtn.innerHTML='<i class="fas fa-crown"></i> Buy Lifetime (499 XT)';
       lifeBtn.disabled=false; lifeBtn.style.opacity=''; lifeBtn.style.pointerEvents='';
       lifeBtn.onclick=()=>sOpenPlan('lifetime');
     } else {
-      lifeBtn.innerHTML=`<i class="fas fa-crown"></i> Need ${499-vt} more VT`;
+      lifeBtn.innerHTML=`<i class="fas fa-crown"></i> Need ${499-vt} more XT`;
       lifeBtn.style.opacity='0.7'; lifeBtn.style.pointerEvents='none';
       lifeBtn.onclick=()=>location.href='profile.html?buy=1';
     }
@@ -231,11 +231,11 @@ function sOpenPlan(plan) {
     </div>
     <div style="background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.15);border-radius:12px;padding:16px 18px;margin-bottom:16px">
       <div class="pm-row"><span class="pm-lbl">Plan</span><span style="font-weight:700;font-size:14px">${_storePlanMeta.label} — ${_storePlanMeta.duration}</span></div>
-      <div class="pm-row"><span class="pm-lbl">Price</span><span style="font-weight:700;color:#a855f7;font-size:15px;font-family:'Orbitron',monospace">${_storePlanMeta.price} VT</span></div>
-      <div class="pm-row"><span class="pm-lbl">Your Balance</span><span style="font-weight:600;font-size:13px;color:${canAfford ? '#e2e8f0' : '#fca5a5'}">${_storeVT} VT</span></div>
+      <div class="pm-row"><span class="pm-lbl">Price</span><span style="font-weight:700;color:#a855f7;font-size:15px;font-family:'Orbitron',monospace">${_storePlanMeta.price} XT</span></div>
+      <div class="pm-row"><span class="pm-lbl">Your Balance</span><span style="font-weight:600;font-size:13px;color:${canAfford ? '#e2e8f0' : '#fca5a5'}">${_storeVT} XT</span></div>
       <div style="border-top:1px solid rgba(168,85,247,.12);padding-top:12px" class="pm-row">
         <span class="pm-lbl">After Purchase</span>
-        <span style="font-weight:700;font-size:14px;color:${canAfford ? '#10b981' : '#fca5a5'}">${afterBal} VT</span>
+        <span style="font-weight:700;font-size:14px;color:${canAfford ? '#10b981' : '#fca5a5'}">${afterBal} XT</span>
       </div>
     </div>
     <div class="pm-note"><i class="fas fa-bolt"></i><span>Plan activates <strong>instantly</strong>. If you have an active sub, you'll be asked to extend it or create a new license.</span></div>
@@ -514,7 +514,7 @@ async function sExecPlan(mode) {
     // ── Update local state ──
     _storeVT          = newVT;
     _storeExistingSub = null;
-    document.getElementById('nav-vt-num').textContent = newVT + ' VT';
+    document.getElementById('nav-vt-num').textContent = newVT + ' XT';
 
     // ── Build success screen ──
     const expStr = expiresAt

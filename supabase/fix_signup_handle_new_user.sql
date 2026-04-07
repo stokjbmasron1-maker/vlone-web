@@ -11,8 +11,6 @@
 ALTER TABLE public.profiles
   ADD COLUMN IF NOT EXISTS vtokens integer NOT NULL DEFAULT 0;
 
-ALTER TABLE public.profiles
-  ADD COLUMN IF NOT EXISTS pw_username text;
 
 -- Trigger: buat profil aman (username unik, vtokens = 0)
 CREATE OR REPLACE FUNCTION public.handle_new_user()
@@ -36,22 +34,20 @@ BEGIN
   END IF;
 
   BEGIN
-    INSERT INTO public.profiles (id, username, email, pw_username, vtokens)
+    INSERT INTO public.profiles (id, username, email, vtokens)
     VALUES (
       NEW.id,
       left(v_username, 100),
       NEW.email,
-      nullif(trim(NEW.raw_user_meta_data->>'pw_username'), ''),
       0
     );
   EXCEPTION
     WHEN unique_violation THEN
-      INSERT INTO public.profiles (id, username, email, pw_username, vtokens)
+      INSERT INTO public.profiles (id, username, email, vtokens)
       VALUES (
         NEW.id,
         left(v_username, 50) || '_' || v_suffix,
         NEW.email,
-        nullif(trim(NEW.raw_user_meta_data->>'pw_username'), ''),
         0
       );
   END;

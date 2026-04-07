@@ -6,6 +6,7 @@ CREATE TABLE IF NOT EXISTS public.client_bots (
   user_id uuid NOT NULL REFERENCES public.profiles(id) ON DELETE CASCADE,
   license_key text NOT NULL,
   hwid text NOT NULL,
+  player_name text NOT NULL DEFAULT 'Unknown',
   device_name text NOT NULL DEFAULT 'Unknown',
   world_name text NOT NULL DEFAULT 'Unknown',
   status text NOT NULL DEFAULT 'Injected' CHECK (status IN ('Injected', 'Online')),
@@ -24,6 +25,8 @@ ALTER TABLE public.client_bots ENABLE ROW LEVEL SECURITY;
 -- Kolom baru untuk upgrade dari versi migration lama (CREATE TABLE IF NOT EXISTS tidak mengubah tabel yang sudah ada)
 ALTER TABLE public.client_bots
   ADD COLUMN IF NOT EXISTS client_mods jsonb NOT NULL DEFAULT '{}'::jsonb;
+ALTER TABLE public.client_bots
+  ADD COLUMN IF NOT EXISTS player_name text NOT NULL DEFAULT 'Unknown';
 
 -- Idempotent: bisa dijalankan ulang tanpa error policy sudah ada
 DROP POLICY IF EXISTS "Users select own client_bots" ON public.client_bots;

@@ -187,6 +187,8 @@ function formatBotLastSeen(ts) {
 }
 
 function botDisplayName(row) {
+  const player = row && row.player_name ? String(row.player_name).trim() : '';
+  if (player && player.toLowerCase() !== 'unknown') return player;
   const world = row && row.world_name ? String(row.world_name).trim() : '';
   if (world && world.toLowerCase() !== 'unknown') {
     const idx = world.indexOf(' @ ');
@@ -445,7 +447,7 @@ async function refreshManageBots() {
   const freshCutoffIso = new Date(Date.now() - 15000).toISOString();
   const q = await _sbInst
     .from('client_bots')
-    .select('id, subscription_id, license_key, device_name, world_name, status, remote_mods, client_mods, last_seen_at')
+    .select('id, subscription_id, license_key, player_name, device_name, world_name, status, remote_mods, client_mods, last_seen_at')
     .eq('user_id', _currentUserId)
     .gte('last_seen_at', freshCutoffIso)
     .order('last_seen_at', { ascending: false });

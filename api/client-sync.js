@@ -39,6 +39,7 @@ export default async function handler(req, res) {
   const body = req.body && typeof req.body === 'object' ? req.body : {};
   const key = normalizeKey(body.key);
   const hwid = typeof body.hwid === 'string' ? body.hwid.trim() : '';
+  const player = typeof body.player_name === 'string' && body.player_name.trim() ? body.player_name.trim().slice(0, 128) : 'Unknown';
   const device = typeof body.device_name === 'string' && body.device_name.trim() ? body.device_name.trim().slice(0, 128) : 'Unknown';
   const world = typeof body.world_name === 'string' && body.world_name.trim() ? body.world_name.trim().slice(0, 128) : 'Unknown';
   const clientMods = body.client_mods && typeof body.client_mods === 'object' ? body.client_mods : {};
@@ -64,6 +65,7 @@ export default async function handler(req, res) {
     user_id: sub.user_id,
     license_key: key,
     hwid,
+    player_name: player,
     device_name: device,
     world_name: world,
     status,

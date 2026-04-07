@@ -157,10 +157,11 @@ async function doRegister() {
   } catch(e) {
     var raw = (e && e.message) ? String(e.message) : '';
     var low = raw.toLowerCase();
-    if (low.indexOf('already registered') >= 0 || low.indexOf('user already') >= 0 || (low.indexOf('email') >= 0 && low.indexOf('already') >= 0))
-      showMsg('Email already Registered');
-    else
+    if (low.indexOf('already registered') >= 0 || low.indexOf('user already') >= 0 || (low.indexOf('email') >= 0 && low.indexOf('already') >= 0)) {
+      showMsg('Email already registered in Auth. If it is missing in profiles table, run supabase/fix_signup_handle_new_user.sql then login with this email.');
+    } else {
       showMsg(raw || 'Registration failed.');
+    }
   }
   setLoading('reg-btn','reg-spin','reg-icon',false);
 }

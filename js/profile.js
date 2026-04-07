@@ -11,7 +11,8 @@ let _activeBotRow = null;
 let _manageBotsPollTimer = null;
 let _botModalDirty = false;
 let _botActiveControls = [];
-let _lastBotsRefreshAt = 0;
+let _botsNextRefreshAt = 0;
+let _botsCountdownTimer = null;
 const BOTS_REFRESH_MS = 3000;
 
 const PM_VTOKENS = 'bgl';
@@ -143,19 +144,25 @@ function escHtml(t) {
     .replace(/'/g, '&#39;');
 }
 
-function formatRefreshMeta(ts, intervalMs) {
-  if (!ts) return `Auto refresh every ${Math.round(intervalMs / 1000)}s`;
-  const sec = Math.max(0, Math.floor((Date.now() - ts) / 1000));
-  const ago = sec <= 1 ? 'just now' : `${sec}s ago`;
-  return `Last refresh: ${ago} • every ${Math.round(intervalMs / 1000)}s`;
+function formatBotsCountdownText() {
+  const step = Math.max(1, Math.round(BOTS_REFRESH_MS / 1000));
+  if (!_botsNextRefreshAt) return `Next refresh in ${step}s`;
+  const msLeft = _botsNextRefreshAt - Date.now();
+  const sec = Math.max(0, Math.ceil(msLeft / 1000));
+  return `Next refresh in ${sec}s`;
 }
 
 function updateBotsRefreshMeta() {
-  const txt = formatRefreshMeta(_lastBotsRefreshAt, BOTS_REFRESH_MS);
+  const txt = formatBotsCountdownText();
   const a = document.getElementById('bots-refresh-meta');
   const b = document.getElementById('bot-remote-refresh-meta');
   if (a) a.textContent = txt;
   if (b) b.textContent = txt;
+}
+
+function scheduleBotsNextRefresh() {
+  _botsNextRefreshAt = Date.now() + BOTS_REFRESH_MS;
+  updateBotsRefreshMeta();
 }
 
 function deviceSlotsUsedMax(s) {
@@ -404,10 +411,10 @@ async function refreshManageBots() {
   if (q.error) {
     const em = String(q.error.message || '').replace(/</g, '&lt;');
     holder.innerHTML = `<div class="no-plan-notice"><i class="fas fa-circle-exclamation"></i> Failed to load bots<br><span style="font-size:11px;color:var(--t2)">${em || 'Unknown error'}</span></div>`;
+    scheduleBotsNextRefresh();
     return;
   }
-  _lastBotsRefreshAt = Date.now();
-  updateBotsRefreshMeta();
+  scheduleBotsNextRefresh();
   _botRows = q.data || [];
   if (_botRows.length === 0) {
     holder.innerHTML = '<div class="no-plan-notice"><i class="fas fa-robot"></i> No client data yet. Open CodeX client after license login.</div>';
@@ -1331,6 +1338,10 @@ loadProfile().then(() => {
 });
 updateBotsRefreshMeta();
 
+if (!_botsCountdownTimer) {
+  _botsCountdownTimer = setInterval(updateBotsRefreshMeta, 250);
+}
+
 if (!_manageBotsPollTimer) {
   _manageBotsPollTimer = setInterval(async () => {
     if (!_sbInst || !_currentUserId) return;
@@ -1343,7 +1354,7 @@ if (!_manageBotsPollTimer) {
         renderBotRemoteForm(mods);
       }
     }
-  }, 3000);
+  }, BOTS_REFRESH_MS);
 }
 
 // PARTICLES

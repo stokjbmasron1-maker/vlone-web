@@ -85,6 +85,36 @@ const BOT_REMOTE_FIELDS = [
   { key: 'gui_show_quick_hud', label: 'Show compact quick panel', type: 'bool', section: 'Settings' },
 ];
 
+// When client_mods never contained a key (older DLL / first sync), match CodeX::Globals defaults (Global.h).
+const BOT_MOD_DEFAULTS = {
+  esp_include_self: true,
+  esp_show_player_names: true,
+  esp_show_player_health_bar: true,
+  esp_item_show_labels: true,
+  gui_show_quick_hud: true,
+  gui_opacity: 0.98,
+  gui_font_scale: 1.0,
+  speed_hack_multiplier: 1.0,
+  break_speed_cap_multiplier: 1.0,
+  esp_tracer_line_mode: 2,
+  esp_tracer_line_thickness: 1.35,
+  jump_mode_override: -1,
+};
+
+function expandLegacyClientMods(mods) {
+  const m = mods && typeof mods === 'object' ? { ...mods } : {};
+  const has = (k) => Object.prototype.hasOwnProperty.call(m, k);
+  if (has('esp_players') && !has('esp_include_self')) {
+    const ep = !!m.esp_players;
+    m.esp_include_self = ep;
+    m.esp_show_other_players = ep;
+  }
+  if (has('esp_items') && !has('esp_collectable_items')) {
+    m.esp_collectable_items = !!m.esp_items;
+  }
+  return m;
+}
+
 async function waitForSB(ms = 5000) {
   const t = Date.now();
   while (!window._sb) {
@@ -384,10 +414,35 @@ function closeBotRemoteModal() {
 }
 
 function readValueForField(mods, field) {
-  const v = mods && Object.prototype.hasOwnProperty.call(mods, field.key) ? mods[field.key] : undefined;
-  if (field.type === 'bool') return !!v;
-  if (field.type === 'float') return typeof v === 'number' ? v : (field.min ?? 0);
-  if (field.type === 'enum') return typeof v === 'number' ? v : field.values[0];
+  const has = mods && Object.prototype.hasOwnProperty.call(mods, field.key);
+  const v = has ? mods[field.key] : undefined;
+  if (field.type === 'bool') {
+    if (has) return !!v;
+    if (Object.prototype.hasOwnProperty.call(BOT_MOD_DEFAULTS, field.key)) return !!BOT_MOD_DEFAULTS[field.key];
+    return false;
+  }
+  if (field.type === 'float') {
+    if (typeof v === 'number' && Number.isFinite(v)) return v;
+    if (typeof v === 'string' && v.trim() !== '') {
+      const n = Number(v);
+      if (Number.isFinite(n)) return n;
+    }
+    if (!has && Object.prototype.hasOwnProperty.call(BOT_MOD_DEFAULTS, field.key)) {
+      const d = BOT_MOD_DEFAULTS[field.key];
+      return typeof d === 'number' ? d : field.min ?? 0;
+    }
+    return field.min ?? 0;
+  }
+  if (field.type === 'enum') {
+    let n = v;
+    if (typeof n === 'string' && n.trim() !== '') n = Number(n);
+    if (typeof n === 'number' && Number.isFinite(n) && field.values.includes(n)) return n;
+    if (!has && Object.prototype.hasOwnProperty.call(BOT_MOD_DEFAULTS, field.key)) {
+      const d = BOT_MOD_DEFAULTS[field.key];
+      if (typeof d === 'number' && field.values.includes(d)) return d;
+    }
+    return field.values[0];
+  }
   return v;
 }
 
@@ -461,11 +516,19 @@ function collectRemoteModsFromForm() {
   return remote_mods;
 }
 
+function resolveBotMods(row) {
+  const rawClient = row && row.client_mods && typeof row.client_mods === 'object' ? row.client_mods : {};
+  const remote = row && row.remote_mods && typeof row.remote_mods === 'object' ? row.remote_mods : {};
+  const client = expandLegacyClientMods(rawClient);
+  // Client-reported keys win: stale remote_mods (e.g. old "Save" with wrong defaults) must not hide live client state.
+  return { ...remote, ...client };
+}
+
 function openBotRemoteModal(rowId) {
   const row = _botRows.find(x => x.id === rowId);
   if (!row) return;
   _activeBotRow = row;
-  const mods = (row.remote_mods && Object.keys(row.remote_mods).length) ? row.remote_mods : (row.client_mods || {});
+  const mods = resolveBotMods(row);
   document.getElementById('bot-remote-sub').textContent = `${row.world_name || 'Unknown'} • ${row.device_name || 'Unknown'}`;
   renderBotRemoteForm(mods);
   document.getElementById('bot-remote-modal').classList.add('show');
@@ -1245,7 +1308,7 @@ if (!_manageBotsPollTimer) {
       const latest = _botRows.find(x => x.id === _activeBotRow.id);
       if (latest) {
         _activeBotRow = latest;
-        const mods = (latest.remote_mods && Object.keys(latest.remote_mods).length) ? latest.remote_mods : (latest.client_mods || {});
+        const mods = resolveBotMods(latest);
         renderBotRemoteForm(mods);
       }
     }

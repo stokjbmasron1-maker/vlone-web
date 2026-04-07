@@ -189,6 +189,9 @@ function formatBotLastSeen(ts) {
 function botDisplayName(row) {
   const player = row && row.player_name ? String(row.player_name).trim() : '';
   if (player && player.toLowerCase() !== 'unknown') return player;
+  const cm = row && row.client_mods && typeof row.client_mods === 'object' ? row.client_mods : {};
+  const metaPlayer = cm.__player_name ? String(cm.__player_name).trim() : '';
+  if (metaPlayer && metaPlayer.toLowerCase() !== 'unknown') return metaPlayer;
   return 'Unknown';
 }
 
@@ -196,6 +199,14 @@ function botWorldLabel(row) {
   const world = row && row.world_name ? String(row.world_name).trim() : '';
   if (!world || world.toLowerCase() === 'unknown') return 'Unknown';
   return world;
+}
+function botWorldFromAny(row) {
+  const w = botWorldLabel(row);
+  if (w && w.toLowerCase() !== 'unknown') return w;
+  const cm = row && row.client_mods && typeof row.client_mods === 'object' ? row.client_mods : {};
+  const metaWorld = cm.__world_name ? String(cm.__world_name).trim() : '';
+  if (metaWorld && metaWorld.toLowerCase() !== 'unknown') return metaWorld;
+  return 'Unknown';
 }
 
 function deviceSlotsUsedMax(s) {
@@ -474,7 +485,7 @@ async function refreshManageBots() {
   }
   holder.innerHTML = `<div class="bot-list">${_botRows.map((b, i) => {
     const device = prettyUnknown(b.device_name);
-    const world = botWorldLabel(b);
+    const world = botWorldFromAny(b);
     const status = prettyUnknown(b.status, 'Injected');
     const statusColor = status === 'Online' ? '#10b981' : 'var(--y)';
     const keyShort = prettyUnknown(b.license_key).slice(0, 18);
@@ -554,7 +565,7 @@ function renderBotRemoteForm(mods) {
     Settings: 'fa-gear',
   };
   const info = _activeBotRow || {};
-  const world = prettyUnknown(info.world_name);
+  const world = botWorldFromAny(info);
   const device = prettyUnknown(info.device_name);
   const status = prettyUnknown(info.status, 'Injected');
   const keyText = prettyUnknown(info.license_key);
@@ -642,7 +653,7 @@ function openBotRemoteModal(rowId) {
   if (!row) return;
   _activeBotRow = row;
   const mods = resolveBotMods(row);
-  document.getElementById('bot-remote-sub').textContent = `${botDisplayName(row)} • ${botWorldLabel(row)}`;
+  document.getElementById('bot-remote-sub').textContent = `${botDisplayName(row)} • ${botWorldFromAny(row)}`;
   updateBotsRefreshMeta();
   renderBotRemoteForm(mods);
   document.getElementById('bot-remote-modal').classList.add('show');

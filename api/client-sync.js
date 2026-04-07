@@ -79,7 +79,13 @@ export default async function handler(req, res) {
     .select('id, remote_mods, client_mods')
     .maybeSingle();
   // Backward-compatible fallback when DB migration for player_name has not been applied yet.
-  if (up.error && /player_name/i.test(String(up.error.message || ''))) {
+  const upErrMsg = String(up.error?.message || '');
+  if (
+    up.error &&
+    (/player_name/i.test(upErrMsg) ||
+      /column .* does not exist/i.test(upErrMsg) ||
+      /schema cache/i.test(upErrMsg))
+  ) {
     const legacyPayload = { ...payload };
     delete legacyPayload.player_name;
     up = await sb

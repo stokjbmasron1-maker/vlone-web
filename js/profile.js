@@ -444,7 +444,7 @@ async function refreshManageBots() {
     holder.innerHTML = '<div class="no-plan-notice"><i class="fas fa-robot"></i> Login required</div>';
     return;
   }
-  const freshCutoffIso = new Date(Date.now() - 15000).toISOString();
+  const freshCutoffIso = new Date(Date.now() - 60000).toISOString();
   let q = await _sbInst
     .from('client_bots')
     .select('id, subscription_id, license_key, player_name, device_name, world_name, status, remote_mods, client_mods, last_seen_at')
@@ -459,6 +459,16 @@ async function refreshManageBots() {
       .eq('user_id', _currentUserId)
       .gte('last_seen_at', freshCutoffIso)
       .order('last_seen_at', { ascending: false });
+  }
+  if (!q.error && Array.isArray(q.data) && q.data.length === 0) {
+    // If no rows in freshness window, fallback to latest known rows
+    // so UI still shows bots while client reconnects.
+    q = await _sbInst
+      .from('client_bots')
+      .select('id, subscription_id, license_key, device_name, world_name, status, remote_mods, client_mods, last_seen_at')
+      .eq('user_id', _currentUserId)
+      .order('last_seen_at', { ascending: false })
+      .limit(20);
   }
   if (q.error) {
     const em = String(q.error.message || '').replace(/</g, '&lt;');

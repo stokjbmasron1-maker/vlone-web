@@ -532,18 +532,21 @@ function toggleBot(id) {
 async function devAddTokens() {
   if (!_sbInst || !_currentUserId) { showToast('Not logged in'); return; }
   const newTotal = _currentVT + 500;
-  const { data, error } = await _sbInst.from('profiles').update({ vtokens: newTotal }).eq('id', _currentUserId).select('vtokens').single();
+  const { error } = await _sbInst.from('profiles').update({ vtokens: newTotal }).eq('id', _currentUserId);
   if (error) { showToast('Error: ' + error.message); return; }
-  _currentVT = data.vtokens;
-  document.getElementById('vt-num').innerHTML = `${data.vtokens} <span style="font-size:12px;color:var(--t2)">XT</span>`;
+  const { data: refreshed, error: rfErr } = await _sbInst.from('profiles').select('vtokens').eq('id', _currentUserId).maybeSingle();
+  if (rfErr) { showToast('Error: ' + rfErr.message); return; }
+  const finalTotal = (refreshed && typeof refreshed.vtokens === 'number') ? refreshed.vtokens : newTotal;
+  _currentVT = finalTotal;
+  document.getElementById('vt-num').innerHTML = `${finalTotal} <span style="font-size:12px;color:var(--t2)">XT</span>`;
   document.getElementById('vt-num').style.color = '';
   document.getElementById('vt-notice').style.display = 'none';
-  showToast('🔧 Dev: +500 XT added! Total: ' + data.vtokens + ' XT');
+  showToast('🔧 Dev: +500 XT added! Total: ' + finalTotal + ' XT');
 }
 
 async function devResetTokens() {
   if (!_sbInst || !_currentUserId) { showToast('Not logged in'); return; }
-  const { data, error } = await _sbInst.from('profiles').update({ vtokens: 0 }).eq('id', _currentUserId).select('vtokens').single();
+  const { error } = await _sbInst.from('profiles').update({ vtokens: 0 }).eq('id', _currentUserId);
   if (error) { showToast('Error: ' + error.message); return; }
   _currentVT = 0;
   document.getElementById('vt-num').innerHTML = `0 <span style="font-size:12px;color:var(--t2)">XT</span>`;

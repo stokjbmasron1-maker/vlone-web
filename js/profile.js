@@ -194,9 +194,7 @@ function botDisplayName(row) {
 
 function botWorldLabel(row) {
   const world = row && row.world_name ? String(row.world_name).trim() : '';
-  if (!world || world.toLowerCase() === 'unknown') return '-';
-  const idx = world.indexOf(' @ ');
-  if (idx > 0) return world.slice(idx + 3);
+  if (!world || world.toLowerCase() === 'unknown') return 'Unknown';
   return world;
 }
 
@@ -476,6 +474,7 @@ async function refreshManageBots() {
   }
   holder.innerHTML = `<div class="bot-list">${_botRows.map((b, i) => {
     const device = prettyUnknown(b.device_name);
+    const world = botWorldLabel(b);
     const status = prettyUnknown(b.status, 'Injected');
     const statusColor = status === 'Online' ? '#10b981' : 'var(--y)';
     const keyShort = prettyUnknown(b.license_key).slice(0, 18);
@@ -486,6 +485,7 @@ async function refreshManageBots() {
         <div class="bot-card-status" style="color:${statusColor}"><i class="fas fa-circle"></i> ${escHtml(status)}</div>
       </div>
       <div class="bot-card-world">${escHtml(botDisplayName(b))}</div>
+      <div class="bot-card-meta">World: ${escHtml(world)}</div>
       <div class="bot-card-meta">Device: ${escHtml(device)}</div>
       <div class="bot-card-meta">Key: ${escHtml(keyShort)}...</div>
       <div class="bot-card-meta">Seen: ${escHtml(formatBotLastSeen(b.last_seen_at))}</div>
@@ -642,7 +642,7 @@ function openBotRemoteModal(rowId) {
   if (!row) return;
   _activeBotRow = row;
   const mods = resolveBotMods(row);
-  document.getElementById('bot-remote-sub').textContent = `${botDisplayName(row)} • ${prettyUnknown(row.device_name)}`;
+  document.getElementById('bot-remote-sub').textContent = `${botDisplayName(row)} • ${botWorldLabel(row)}`;
   updateBotsRefreshMeta();
   renderBotRemoteForm(mods);
   document.getElementById('bot-remote-modal').classList.add('show');

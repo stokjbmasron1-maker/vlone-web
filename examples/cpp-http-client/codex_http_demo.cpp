@@ -285,7 +285,7 @@ static int RunMainBody() {
   OutLn("");
   OutLn("HWID: Windows MachineGuid (registry) + prefix mg-. Fallback: PC name if unavailable.");
   OutLn("");
-  Out("Enter license key (from web dashboard, e.g. VLN-XXXXXXXX-MON): ");
+  Out("Enter license key (from web dashboard, e.g. CODEX-XXXXXXXX-MON): ");
 
   std::string license;
   if (!std::getline(std::cin, license)) {

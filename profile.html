@@ -51,32 +51,32 @@ window._sb = createClient(
         </div>
       </div>
 
-      <!-- VTOKEN WIDGET -->
+      <!-- X-TOKEN WIDGET -->
       <div class="vt-widget">
         <div class="vt-balance">
           <div class="vt-icon"><i class="fas fa-coins"></i></div>
           <div>
-            <div class="vt-lbl">Vlone Token</div>
+            <div class="vt-lbl">X-Token</div>
             <div class="vt-num" id="vt-num">0 <span style="font-size:12px;color:var(--t2)">VT</span></div>
           </div>
         </div>
         <button class="vt-buy" id="vt-action-btn" onclick="openVTModal()">
-          <i class="fas fa-plus-circle"></i> Buy VTokens
+          <i class="fas fa-plus-circle"></i> Buy X-Tokens
         </button>
       </div>
     </div>
 
-    <!-- ZERO VT NOTICE -->
+    <!-- ZERO XT NOTICE -->
     <div id="vt-notice" style="display:none;animation:fU .5s ease both">
       <div style="background:rgba(245,158,11,.08);border:1px solid rgba(245,158,11,.25);border-radius:14px;padding:16px 22px;display:flex;align-items:center;justify-content:space-between;gap:14px;margin-bottom:20px;flex-wrap:wrap">
         <div style="display:flex;align-items:center;gap:12px">
           <i class="fas fa-wallet" style="font-size:22px;color:var(--y)"></i>
           <div>
-            <div style="font-size:14px;font-weight:700;margin-bottom:2px">Your VToken balance is 0!</div>
-            <div style="font-size:12px;color:var(--t2)">Buy VTokens to unlock a plan or extend your access</div>
+            <div style="font-size:14px;font-weight:700;margin-bottom:2px">Your X-Token balance is 0!</div>
+            <div style="font-size:12px;color:var(--t2)">Buy X-Tokens to unlock a plan or extend your access</div>
           </div>
         </div>
-        <button class="btn btn-grad" onclick="openVTModal()"><i class="fas fa-coins"></i> Buy VTokens</button>
+        <button class="btn btn-grad" onclick="openVTModal()"><i class="fas fa-coins"></i> Buy X-Tokens</button>
       </div>
     </div>
 
@@ -241,19 +241,19 @@ window._sb = createClient(
     </button>
 
     <div style="text-align:center;margin-top:12px">
-      <button onclick="closePlanModal();openVTModal()" style="background:none;border:none;color:var(--p);font-size:12px;cursor:pointer;font-family:inherit"><i class="fas fa-coins"></i> Need more VTokens? Buy here</button>
+      <button onclick="closePlanModal();openVTModal()" style="background:none;border:none;color:var(--p);font-size:12px;cursor:pointer;font-family:inherit"><i class="fas fa-coins"></i> Need more X-Tokens? Buy here</button>
     </div>
   </div>
 </div>
 
 <!-- ══════════════════════════════════════
-     VTOKEN BUY MODAL
+     X-TOKEN BUY MODAL
 ══════════════════════════════════════ -->
 <div class="modal-bg" id="vt-modal" onclick="if(event.target===this)closeVTModal()">
   <div class="modal">
     <button class="modal-close" onclick="closeVTModal()"><i class="fas fa-xmark"></i></button>
-    <h2><i class="fas fa-coins" style="color:var(--p);font-size:16px;margin-right:8px"></i>Buy Vlone Token</h2>
-    <div class="modal-sub">1 VToken ≈ 0.027 BGL • 67 VT = 1 day • 299 VT = 1 month • 499 VT = lifetime • 50 VT = +1 device slot</div>
+    <h2><i class="fas fa-coins" style="color:var(--p);font-size:16px;margin-right:8px"></i>Buy X-Token</h2>
+    <div class="modal-sub">1 X-Token ≈ 0.027 BGL • 67 XT = 1 day • 299 XT = 1 month • 499 XT = lifetime • 50 XT = +1 device slot</div>
 
     <div class="amt-grid" id="amt-grid">
       <div class="amt-card sel" data-vt="50"   data-bgl="1.5"><div class="amt-vt">50 VT</div><div class="amt-bgl">≈ 1.5 BGL</div></div>

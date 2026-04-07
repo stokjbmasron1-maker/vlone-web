@@ -10,7 +10,7 @@ CREATE INDEX IF NOT EXISTS idx_subscriptions_license_key
   ON public.subscriptions(license_key);
 
 UPDATE public.subscriptions
-SET license_key = 'VLN-'
+SET license_key = 'CODEX-'
   || UPPER(SUBSTRING(REPLACE(id::text, '-', ''), 1, 8))
   || '-'
   || UPPER(LEFT(plan, 3))

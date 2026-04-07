@@ -24,7 +24,7 @@ function licenseKeyForDisplay(s) {
     return String(s.license_key).trim().toUpperCase();
   }
   const id8 = (s.id || '').replace(/-/g, '').substring(0, 8).toUpperCase();
-  return `VLN-${id8}-${(s.plan || 'UNK').substring(0, 3).toUpperCase()}`;
+  return `CODEX-${id8}-${(s.plan || 'UNK').substring(0, 3).toUpperCase()}`;
 }
 
 function escHtml(t) {
@@ -300,7 +300,7 @@ function renderProfile(user, profile, subs) {
     }
   }
 
-  // VTokens
+  // X-Tokens
   document.getElementById('vt-num').innerHTML = `${vtokens} <span style="font-size:12px;color:var(--t2)">VT</span>`;
   if (vtokens === 0) {
     document.getElementById('vt-notice').style.display = 'block';
@@ -589,7 +589,7 @@ function openPlanModal(plan) {
         <span style="font-weight:700;font-size:14px;color:${canAfford ? 'var(--g)' : '#fca5a5'}" id="pm-after">${afterBal} VT</span>
       </div>
     </div>
-    <div id="pm-error" style="display:${canAfford ? 'none' : 'block'};background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 12px;font-size:12px;color:#fca5a5;margin-bottom:12px;text-align:center">${canAfford ? '' : '⚠️ Not enough VTokens. You need ' + (_planMeta.price - _currentVT) + ' more VT.'}</div>
+    <div id="pm-error" style="display:${canAfford ? 'none' : 'block'};background:rgba(239,68,68,.08);border:1px solid rgba(239,68,68,.2);border-radius:8px;padding:10px 12px;font-size:12px;color:#fca5a5;margin-bottom:12px;text-align:center">${canAfford ? '' : '⚠️ Not enough X-Tokens. You need ' + (_planMeta.price - _currentVT) + ' more XT.'}</div>
     <button class="submit-btn" id="pm-confirm-btn" onclick="confirmPlanPurchase()" ${canAfford ? '' : 'disabled'} style="${canAfford ? '' : 'opacity:.45;cursor:not-allowed'}">
       <i class="fas fa-circle-check"></i> CONFIRM PURCHASE
     </button>`;
@@ -681,7 +681,7 @@ function showLicensePicker() {
       return String(sub.license_key).trim().toUpperCase();
     }
     const id = sub.id, plan = sub.plan;
-    return `VLN-${(id||'').replace(/-/g,'').substring(0,8).toUpperCase()}-${(plan||'').substring(0,3).toUpperCase()}`;
+    return `CODEX-${(id||'').replace(/-/g,'').substring(0,8).toUpperCase()}-${(plan||'').substring(0,3).toUpperCase()}`;
   }
   function fmtExp(s) {
     if (!s.expires_at) return 'Lifetime';
@@ -736,7 +736,7 @@ async function execPlanPurchase(mode) {
   function subKey(id, plan) {
     const id8 = (id || '').replace(/-/g,'').substring(0,8).toUpperCase();
     const pl3 = (plan || '').substring(0,3).toUpperCase();
-    return `VLN-${id8}-${pl3}`;
+    return `CODEX-${id8}-${pl3}`;
   }
 
   const now   = new Date();
@@ -752,9 +752,9 @@ async function execPlanPurchase(mode) {
   try {
     if (!_sbInst || !_currentUserId) throw new Error('Not connected to database. Please refresh.');
 
-    // Deduct VTokens
+    // Deduct X-Tokens
     const { error: vtErr } = await _sbInst.from('profiles').update({ vtokens: newVT }).eq('id', _currentUserId);
-    if (vtErr) throw new Error('VToken deduction failed: ' + vtErr.message);
+    if (vtErr) throw new Error('X-Token deduction failed: ' + vtErr.message);
 
     let licKey = '', isExtend = mode === 'extend';
 

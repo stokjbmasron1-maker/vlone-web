@@ -202,7 +202,7 @@ const PLANS = {
 function makeKey(id, plan) {
   const id8 = (id||'').replace(/-/g,'').substring(0,8).toUpperCase();
   const pl3 = (plan||'').substring(0,3).toUpperCase();
-  return `VLN-${id8}-${pl3}`;
+  return `CODEX-${id8}-${pl3}`;
 }
 
 // ─────────────────────────────────────────
@@ -239,12 +239,12 @@ function sOpenPlan(plan) {
       </div>
     </div>
     <div class="pm-note"><i class="fas fa-bolt"></i><span>Plan activates <strong>instantly</strong>. If you have an active sub, you'll be asked to extend it or create a new license.</span></div>
-    <div class="pm-err" id="s-pm-err" style="display:${canAfford ? 'none' : 'block'}">${canAfford ? '' : '⚠️ Insufficient VTokens. You need ' + (_storePlanMeta.price - _storeVT) + ' more VT.'}</div>
+    <div class="pm-err" id="s-pm-err" style="display:${canAfford ? 'none' : 'block'}">${canAfford ? '' : '⚠️ Insufficient X-Tokens. You need ' + (_storePlanMeta.price - _storeVT) + ' more XT.'}</div>
     <button class="pm-btn" id="s-pm-btn" onclick="sConfirmPlan()" ${canAfford ? '' : 'disabled'}>
       <i class="fas fa-circle-check"></i> CONFIRM PURCHASE
     </button>
     <div style="text-align:center;margin-top:12px">
-      <a href="profile.html?buy=1" style="color:#a855f7;font-size:12px;text-decoration:none"><i class="fas fa-coins"></i> Need VTokens? Top up here</a>
+      <a href="profile.html?buy=1" style="color:#a855f7;font-size:12px;text-decoration:none"><i class="fas fa-coins"></i> Need X-Tokens? Top up here</a>
     </div>`;
 
   document.getElementById('s-plan-modal').classList.add('show');
@@ -320,7 +320,7 @@ function sShowLicensePicker() {
       return String(sub.license_key).trim().toUpperCase();
     }
     const id = sub.id, plan = sub.plan;
-    return `VLN-${(id||'').replace(/-/g,'').substring(0,8).toUpperCase()}-${(plan||'').substring(0,3).toUpperCase()}`;
+    return `CODEX-${(id||'').replace(/-/g,'').substring(0,8).toUpperCase()}-${(plan||'').substring(0,3).toUpperCase()}`;
   }
   function fmtExp(s) {
     if (!s.expires_at) return 'Lifetime';
@@ -432,12 +432,12 @@ async function sExecPlan(mode) {
     const newVT = _storeVT - _storePlanMeta.price;
     const isExtend = mode === 'extend';
 
-    // ── Deduct VTokens ──
+    // ── Deduct X-Tokens ──
     const { error: vtErr } = await _sbClient
       .from('profiles')
       .update({ vtokens: newVT })
       .eq('id', _storeUserId);
-    if (vtErr) throw new Error('VToken deduction failed: ' + vtErr.message);
+    if (vtErr) throw new Error('X-Token deduction failed: ' + vtErr.message);
 
     let licKey    = '';
     let expiresAt = null;

@@ -29,7 +29,7 @@ CREATE INDEX IF NOT EXISTS idx_subscriptions_license_key
   ON public.subscriptions(license_key);
 
 UPDATE public.subscriptions
-SET license_key = 'VLN-'
+SET license_key = 'CODEX-'
   || UPPER(SUBSTRING(REPLACE(id::text, '-', ''), 1, 8))
   || '-'
   || UPPER(LEFT(plan, 3))
@@ -119,7 +119,7 @@ BEGIN
   END IF;
   SELECT vtokens INTO cur_vt FROM public.profiles WHERE id = uid;
   IF cur_vt IS NULL OR cur_vt < price THEN
-    RETURN json_build_object('ok', false, 'error', 'Not enough VTokens (50 required)');
+    RETURN json_build_object('ok', false, 'error', 'Not enough X-Tokens (50 required)');
   END IF;
   UPDATE public.profiles SET vtokens = vtokens - price WHERE id = uid;
   UPDATE public.subscriptions

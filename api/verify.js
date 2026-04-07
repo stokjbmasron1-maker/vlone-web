@@ -39,7 +39,7 @@ function json(res, status, body) {
 function normalizeKey(raw) {
   if (typeof raw !== 'string') return '';
   const k = raw.trim().toUpperCase();
-  if (!/^VLN-[A-F0-9]{8}-[A-Z0-9]{3}$/.test(k)) return '';
+  if (!/^CODEX-[A-F0-9]{8}-[A-Z0-9]{3}$/.test(k)) return '';
   return k;
 }
 

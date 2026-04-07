@@ -77,7 +77,7 @@ BEGIN
   END IF;
   SELECT vtokens INTO cur_vt FROM public.profiles WHERE id = uid;
   IF cur_vt IS NULL OR cur_vt < price THEN
-    RETURN json_build_object('ok', false, 'error', 'Not enough VTokens (50 required)');
+    RETURN json_build_object('ok', false, 'error', 'Not enough X-Tokens (50 required)');
   END IF;
   UPDATE public.profiles SET vtokens = vtokens - price WHERE id = uid;
   UPDATE public.subscriptions

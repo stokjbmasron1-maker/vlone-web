@@ -75,6 +75,47 @@ let _storeAllSubs      = [];    // all active subs (for picker)
 // Valid payment_method values accepted by DB constraint on subscriptions table.
 const PM_VTOKENS = 'bgl';
 
+async function waitForSupabaseClient(maxMs = 5000) {
+  const start = Date.now();
+  while (!_sbClient) {
+    if (Date.now() - start > maxMs) return null;
+    await new Promise(r => setTimeout(r, 80));
+  }
+  return _sbClient;
+}
+
+async function refreshStoreUserState() {
+  const sc = await waitForSupabaseClient();
+  if (!sc) return;
+  try {
+    let uid = null;
+    const sess = await sc.auth.getSession();
+    uid = sess?.data?.session?.user?.id || null;
+    if (!uid) {
+      const rawTok = localStorage.getItem('sb-eyqvcsfebrwsemiwkajg-auth-token');
+      if (!rawTok) return;
+      const tok = JSON.parse(rawTok);
+      uid = tok?.user?.id || null;
+    }
+    if (!uid) return;
+
+    const [{ data: prof }, { data: topSub }] = await Promise.all([
+      sc.from('profiles').select('vtokens').eq('id', uid).maybeSingle(),
+      sc.from('subscriptions').select('*').eq('user_id', uid).eq('is_active', true)
+        .order('expires_at', { ascending: false }).limit(1).maybeSingle()
+    ]);
+
+    const vt = prof?.vtokens ?? 0;
+    _storeVT = vt;
+    _storeUserId = uid;
+    document.getElementById('nav-vt').style.display = 'flex';
+    document.getElementById('nav-vt-num').textContent = vt + ' XT';
+    updatePricingCards(vt, topSub || null);
+  } catch (e) {
+    console.warn('refreshStoreUserState failed:', e);
+  }
+}
+
 (async () => {
   try {
     const { createClient } = await import('https://cdn.jsdelivr.net/npm/@supabase/supabase-js/+esm');
@@ -96,33 +137,12 @@ window.addEventListener('load', async () => {
     setTimeout(() => { t.style.opacity='0'; t.style.transition='opacity .5s'; setTimeout(()=>t.style.display='none',500); }, 5000);
   }
 
-  const rawTok = localStorage.getItem('sb-eyqvcsfebrwsemiwkajg-auth-token');
-  if (!rawTok) return;
-  try {
-    const tok = JSON.parse(rawTok);
-    if (!tok?.user?.id) return;
-    const uid = tok.user.id;
+  await refreshStoreUserState();
+});
 
-    // Wait for SB client (up to 5s)
-    let sc = null;
-    for (let i=0; i<50; i++) { if(_sbClient){ sc=_sbClient; break; } await new Promise(r=>setTimeout(r,100)); }
-    if (!sc) return;
-
-    const [{ data:prof }, { data:topSub }] = await Promise.all([
-      sc.from('profiles').select('vtokens').eq('id',uid).single(),
-      sc.from('subscriptions').select('*').eq('user_id',uid).eq('is_active',true)
-        .order('expires_at',{ascending:false}).limit(1).maybeSingle()
-    ]);
-
-    const vt = prof?.vtokens ?? 0;
-    _storeVT     = vt;
-    _storeUserId = uid;
-
-    document.getElementById('nav-vt').style.display  = 'flex';
-    document.getElementById('nav-vt-num').textContent = vt + ' XT';
-
-    updatePricingCards(vt, topSub);
-  } catch(e) { console.warn('User data load failed:', e); }
+window.addEventListener('focus', () => { refreshStoreUserState(); });
+document.addEventListener('visibilitychange', () => {
+  if (document.visibilityState === 'visible') refreshStoreUserState();
 });
 
 // ─────────────────────────────────────────

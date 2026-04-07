@@ -8,6 +8,8 @@ let _selectedBGL = 1.5;
 let _botStates = {};
 let _botRows = [];
 let _activeBotRow = null;
+let _manageBotsPollTimer = null;
+let _botModalDirty = false;
 
 const PM_VTOKENS = 'bgl';
 const DEVICE_SLOT_PRICE = 50;
@@ -274,13 +276,16 @@ async function refreshManageBots() {
     holder.innerHTML = '<div class="no-plan-notice"><i class="fas fa-robot"></i> Login required</div>';
     return;
   }
+  const freshCutoffIso = new Date(Date.now() - 15000).toISOString();
   const q = await _sbInst
     .from('client_bots')
-    .select('id, subscription_id, license_key, device_name, world_name, status, remote_mods, last_seen_at')
+    .select('id, subscription_id, license_key, device_name, world_name, status, remote_mods, client_mods, last_seen_at')
     .eq('user_id', _currentUserId)
+    .gte('last_seen_at', freshCutoffIso)
     .order('last_seen_at', { ascending: false });
   if (q.error) {
-    holder.innerHTML = '<div class="no-plan-notice"><i class="fas fa-circle-exclamation"></i> Failed to load bots</div>';
+    const em = String(q.error.message || '').replace(/</g, '&lt;');
+    holder.innerHTML = `<div class="no-plan-notice"><i class="fas fa-circle-exclamation"></i> Failed to load bots<br><span style="font-size:11px;color:var(--t2)">${em || 'Unknown error'}</span></div>`;
     return;
   }
   _botRows = q.data || [];
@@ -303,19 +308,24 @@ function closeBotRemoteModal() {
   const m = document.getElementById('bot-remote-modal');
   if (m) m.classList.remove('show');
   _activeBotRow = null;
+  _botModalDirty = false;
 }
 
 function openBotRemoteModal(rowId) {
   const row = _botRows.find(x => x.id === rowId);
   if (!row) return;
   _activeBotRow = row;
-  const mods = row.remote_mods || {};
+  const mods = (row.remote_mods && Object.keys(row.remote_mods).length) ? row.remote_mods : (row.client_mods || {});
   document.getElementById('bot-remote-sub').textContent = `${row.world_name || 'Unknown'} • ${row.device_name || 'Unknown'}`;
   document.getElementById('bot-remote-body').innerHTML = `
     <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="rm-god" ${mods.godmode ? 'checked' : ''}/> God Mode</label>
     <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="rm-esp" ${mods.esp_players ? 'checked' : ''}/> ESP Players</label>
     <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="rm-item" ${mods.esp_items ? 'checked' : ''}/> ESP Items</label>
   `;
+  ['rm-god','rm-esp','rm-item'].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) el.addEventListener('change', () => { _botModalDirty = true; });
+  });
   document.getElementById('bot-remote-modal').classList.add('show');
 }
 
@@ -1088,6 +1098,26 @@ loadProfile().then(() => {
   const planParam = params.get('plan');
   if (planParam) setTimeout(() => openPlanModal(planParam), 400);
 });
+
+if (!_manageBotsPollTimer) {
+  _manageBotsPollTimer = setInterval(async () => {
+    if (!_sbInst || !_currentUserId) return;
+    await refreshManageBots();
+    if (_activeBotRow && !_botModalDirty) {
+      const latest = _botRows.find(x => x.id === _activeBotRow.id);
+      if (latest) {
+        _activeBotRow = latest;
+        const mods = (latest.remote_mods && Object.keys(latest.remote_mods).length) ? latest.remote_mods : (latest.client_mods || {});
+        const rg = document.getElementById('rm-god');
+        const re = document.getElementById('rm-esp');
+        const ri = document.getElementById('rm-item');
+        if (rg) rg.checked = !!mods.godmode;
+        if (re) re.checked = !!mods.esp_players;
+        if (ri) ri.checked = !!mods.esp_items;
+      }
+    }
+  }, 3000);
+}
 
 // PARTICLES
 const cv = document.getElementById('cv'), cx = cv.getContext('2d');

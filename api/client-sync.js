@@ -23,6 +23,7 @@ export default async function handler(req, res) {
   const hwid = typeof body.hwid === 'string' ? body.hwid.trim() : '';
   const device = typeof body.device_name === 'string' && body.device_name.trim() ? body.device_name.trim().slice(0, 128) : 'Unknown';
   const world = typeof body.world_name === 'string' && body.world_name.trim() ? body.world_name.trim().slice(0, 128) : 'Unknown';
+  const clientMods = body.client_mods && typeof body.client_mods === 'object' ? body.client_mods : {};
   if (!key || hwid.length < 8) return json(res, 400, { ok: false, error: 'Bad payload' });
 
   const sb = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
@@ -48,11 +49,20 @@ export default async function handler(req, res) {
     device_name: device,
     world_name: world,
     status,
+    client_mods: clientMods,
     last_seen_at: new Date().toISOString(),
   };
 
-  const up = await sb.from('client_bots').upsert(payload, { onConflict: 'subscription_id,hwid' }).select('remote_mods').maybeSingle();
+  const up = await sb
+    .from('client_bots')
+    .upsert(payload, { onConflict: 'subscription_id,hwid' })
+    .select('remote_mods, client_mods')
+    .maybeSingle();
   if (up.error) return json(res, 500, { ok: false, error: up.error.message });
 
-  return json(res, 200, { ok: true, remote_mods: up.data?.remote_mods || {} });
+  return json(res, 200, {
+    ok: true,
+    remote_mods: up.data?.remote_mods || {},
+    client_mods: up.data?.client_mods || {},
+  });
 }

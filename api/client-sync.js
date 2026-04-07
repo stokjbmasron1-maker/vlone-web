@@ -11,6 +11,24 @@ function normalizeKey(raw) {
   return /^CODEX-[A-F0-9]{8}-[A-Z0-9]{3}$/.test(k) ? k : '';
 }
 
+function stable(value) {
+  if (Array.isArray(value)) return value.map(stable);
+  if (value && typeof value === 'object') {
+    const out = {};
+    for (const k of Object.keys(value).sort()) out[k] = stable(value[k]);
+    return out;
+  }
+  return value;
+}
+
+function deepEqualJson(a, b) {
+  try {
+    return JSON.stringify(stable(a || {})) === JSON.stringify(stable(b || {}));
+  } catch (_) {
+    return false;
+  }
+}
+
 export default async function handler(req, res) {
   if (req.method !== 'POST') return json(res, 405, { ok: false, error: 'Method not allowed' });
 
@@ -56,13 +74,27 @@ export default async function handler(req, res) {
   const up = await sb
     .from('client_bots')
     .upsert(payload, { onConflict: 'subscription_id,hwid' })
-    .select('remote_mods, client_mods')
+    .select('id, remote_mods, client_mods')
     .maybeSingle();
   if (up.error) return json(res, 500, { ok: false, error: up.error.message });
 
+  let remoteMods = up.data?.remote_mods || {};
+  const currentClientMods = up.data?.client_mods || {};
+
+  // One-shot remote: once client has applied desired state, clear remote_mods.
+  if (Object.keys(remoteMods).length > 0 && deepEqualJson(remoteMods, currentClientMods) && up.data?.id) {
+    const clear = await sb
+      .from('client_bots')
+      .update({ remote_mods: {} })
+      .eq('id', up.data.id)
+      .select('remote_mods')
+      .maybeSingle();
+    if (!clear.error) remoteMods = clear.data?.remote_mods || {};
+  }
+
   return json(res, 200, {
     ok: true,
-    remote_mods: up.data?.remote_mods || {},
+    remote_mods: remoteMods,
     client_mods: up.data?.client_mods || {},
   });
 }

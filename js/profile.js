@@ -456,6 +456,16 @@ function renderBotRemoteForm(mods) {
     sections[f.section].push(f);
   }
   const sectionOrder = ['Main', 'Visual', 'Fun', 'World', 'Misc', 'Fish', 'Settings'];
+  const sectionIcons = {
+    Main: 'fa-crosshairs',
+    Visual: 'fa-eye',
+    Fun: 'fa-bolt',
+    World: 'fa-globe',
+    Misc: 'fa-sliders',
+    Fish: 'fa-fish',
+    Settings: 'fa-gear',
+  };
+  body.className = 'rm-grid';
   body.innerHTML = sectionOrder
     .filter((s) => sections[s] && sections[s].length)
     .map((section) => {
@@ -464,29 +474,29 @@ function renderBotRemoteForm(mods) {
           const id = `rm-${field.key}`;
           const val = readValueForField(mods, field);
           if (field.type === 'bool') {
-            return `<label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="${id}" ${val ? 'checked' : ''}/> ${escHtml(field.label)}</label>`;
+            return `<div class="rm-row"><label><input type="checkbox" id="${id}" ${val ? 'checked' : ''}/> ${escHtml(field.label)}</label></div>`;
           }
           if (field.type === 'float') {
-            return `<label style="display:grid;gap:6px">
-              <span>${escHtml(field.label)}</span>
+            return `<div class="rm-row"><label>${escHtml(field.label)}</label>
               <input type="range" id="${id}" min="${field.min}" max="${field.max}" step="${field.step || 0.01}" value="${Number(val)}" />
-              <span id="${id}-val" style="font-size:11px;color:var(--t2)">${Number(val).toFixed(2)}</span>
-            </label>`;
+              <span id="${id}-val" class="rm-value">${Number(val).toFixed(2)}</span>
+            </div>`;
           }
           if (field.type === 'enum') {
-            return `<label style="display:grid;gap:6px">
-              <span>${escHtml(field.label)}</span>
-              <select id="${id}" style="background:rgba(18,18,24,.9);border:1px solid rgba(168,85,247,.24);border-radius:8px;color:var(--t1);padding:8px">
+            return `<div class="rm-row"><label>${escHtml(field.label)}</label>
+              <select id="${id}">
                 ${field.values.map((v, i) => `<option value="${v}" ${Number(val) === Number(v) ? 'selected' : ''}>${escHtml(field.labels[i])}</option>`).join('')}
               </select>
-            </label>`;
+            </div>`;
           }
           return '';
         })
         .join('');
-      return `<div style="border:1px solid rgba(168,85,247,.18);border-radius:10px;padding:10px;display:grid;gap:10px">
-        <div style="font-size:12px;font-weight:700;color:var(--p)">${escHtml(section)}</div>
-        ${controls}
+      return `<div class="rm-section">
+        <div class="rm-section-head">
+          <strong><i class="fas ${sectionIcons[section] || 'fa-layer-group'}" style="margin-right:6px"></i>${escHtml(section)}</strong>
+        </div>
+        <div class="rm-section-body">${controls}</div>
       </div>`;
     })
     .join('');

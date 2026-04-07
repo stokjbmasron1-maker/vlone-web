@@ -165,6 +165,27 @@ function scheduleBotsNextRefresh() {
   updateBotsRefreshMeta();
 }
 
+function prettyUnknown(v, fallback = 'Unknown') {
+  if (v == null) return fallback;
+  const s = String(v).trim();
+  if (!s) return fallback;
+  if (s.toLowerCase() === 'unknown') return fallback;
+  return s;
+}
+
+function formatBotLastSeen(ts) {
+  if (!ts) return 'Unknown';
+  const d = new Date(ts);
+  if (Number.isNaN(d.getTime())) return 'Unknown';
+  const sec = Math.max(0, Math.floor((Date.now() - d.getTime()) / 1000));
+  if (sec < 2) return 'just now';
+  if (sec < 60) return `${sec}s ago`;
+  const min = Math.floor(sec / 60);
+  if (min < 60) return `${min}m ago`;
+  const hr = Math.floor(min / 60);
+  return `${hr}h ago`;
+}
+
 function deviceSlotsUsedMax(s) {
   const list = Array.isArray(s.license_devices) ? s.license_devices : [];
   const used = list.length > 0 ? list.length : s.hwid && String(s.hwid).trim() ? 1 : 0;
@@ -420,15 +441,24 @@ async function refreshManageBots() {
     holder.innerHTML = '<div class="no-plan-notice"><i class="fas fa-robot"></i> No client data yet. Open CodeX client after license login.</div>';
     return;
   }
-  holder.innerHTML = `<div class="bot-list">${_botRows.map((b, i) => `
-    <button type="button" onclick="openBotRemoteModal('${b.id}')" style="width:100%;text-align:left;background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.2);border-radius:12px;padding:12px;cursor:pointer;color:inherit;font-family:inherit">
-      <div style="font-size:12px;color:var(--t2);margin-bottom:3px">Item ${i + 1}</div>
-      <div style="font-weight:700">${b.world_name || 'Unknown'}</div>
-      <div style="font-size:12px;color:${(b.status || 'Injected') === 'Online' ? '#10b981' : 'var(--y)'}">Status: ${b.status || 'Injected'}</div>
-      <div style="font-size:11px;color:var(--t2)">Device: ${b.device_name || 'Unknown'}</div>
-      <div style="font-size:11px;color:var(--t2)">Key: ${(b.license_key || 'Unknown').slice(0, 18)}...</div>
-    </button>
-  `).join('')}</div>`;
+  holder.innerHTML = `<div class="bot-list">${_botRows.map((b, i) => {
+    const world = prettyUnknown(b.world_name);
+    const device = prettyUnknown(b.device_name);
+    const status = prettyUnknown(b.status, 'Injected');
+    const statusColor = status === 'Online' ? '#10b981' : 'var(--y)';
+    const keyShort = prettyUnknown(b.license_key).slice(0, 18);
+    return `
+    <button type="button" onclick="openBotRemoteModal('${b.id}')" class="bot-card-btn">
+      <div class="bot-card-top">
+        <div class="bot-card-index">Item ${i + 1}</div>
+        <div class="bot-card-status" style="color:${statusColor}"><i class="fas fa-circle"></i> ${escHtml(status)}</div>
+      </div>
+      <div class="bot-card-world">${escHtml(world)}</div>
+      <div class="bot-card-meta">Device: ${escHtml(device)}</div>
+      <div class="bot-card-meta">Key: ${escHtml(keyShort)}...</div>
+      <div class="bot-card-meta">Seen: ${escHtml(formatBotLastSeen(b.last_seen_at))}</div>
+    </button>`;
+  }).join('')}</div>`;
 }
 
 function closeBotRemoteModal() {
@@ -491,8 +521,23 @@ function renderBotRemoteForm(mods) {
     Fish: 'fa-fish',
     Settings: 'fa-gear',
   };
+  const info = _activeBotRow || {};
+  const world = prettyUnknown(info.world_name);
+  const device = prettyUnknown(info.device_name);
+  const status = prettyUnknown(info.status, 'Injected');
+  const keyText = prettyUnknown(info.license_key);
+  const seen = formatBotLastSeen(info.last_seen_at);
+  const infoCard = `
+    <div class="rm-info-card">
+      <div class="rm-info-row"><span>World</span><strong>${escHtml(world)}</strong></div>
+      <div class="rm-info-row"><span>Device</span><strong>${escHtml(device)}</strong></div>
+      <div class="rm-info-row"><span>Status</span><strong>${escHtml(status)}</strong></div>
+      <div class="rm-info-row"><span>Last seen</span><strong>${escHtml(seen)}</strong></div>
+      <div class="rm-info-row rm-info-key"><span>License key</span><strong>${escHtml(keyText)}</strong></div>
+    </div>`;
+
   body.className = 'rm-grid';
-  body.innerHTML = sectionOrder
+  body.innerHTML = infoCard + sectionOrder
     .filter((s) => sections[s] && sections[s].length)
     .map((section) => {
       const controls = sections[section]
@@ -565,7 +610,7 @@ function openBotRemoteModal(rowId) {
   if (!row) return;
   _activeBotRow = row;
   const mods = resolveBotMods(row);
-  document.getElementById('bot-remote-sub').textContent = `${row.world_name || 'Unknown'} • ${row.device_name || 'Unknown'}`;
+  document.getElementById('bot-remote-sub').textContent = `${prettyUnknown(row.world_name)} • ${prettyUnknown(row.device_name)}`;
   updateBotsRefreshMeta();
   renderBotRemoteForm(mods);
   document.getElementById('bot-remote-modal').classList.add('show');

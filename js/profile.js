@@ -445,12 +445,21 @@ async function refreshManageBots() {
     return;
   }
   const freshCutoffIso = new Date(Date.now() - 15000).toISOString();
-  const q = await _sbInst
+  let q = await _sbInst
     .from('client_bots')
     .select('id, subscription_id, license_key, player_name, device_name, world_name, status, remote_mods, client_mods, last_seen_at')
     .eq('user_id', _currentUserId)
     .gte('last_seen_at', freshCutoffIso)
     .order('last_seen_at', { ascending: false });
+  // Backward-compatible fallback when player_name column isn't migrated yet.
+  if (q.error && /player_name/i.test(String(q.error.message || ''))) {
+    q = await _sbInst
+      .from('client_bots')
+      .select('id, subscription_id, license_key, device_name, world_name, status, remote_mods, client_mods, last_seen_at')
+      .eq('user_id', _currentUserId)
+      .gte('last_seen_at', freshCutoffIso)
+      .order('last_seen_at', { ascending: false });
+  }
   if (q.error) {
     const em = String(q.error.message || '').replace(/</g, '&lt;');
     holder.innerHTML = `<div class="no-plan-notice"><i class="fas fa-circle-exclamation"></i> Failed to load bots<br><span style="font-size:11px;color:var(--t2)">${em || 'Unknown error'}</span></div>`;

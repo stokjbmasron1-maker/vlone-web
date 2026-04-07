@@ -73,11 +73,21 @@ export default async function handler(req, res) {
     last_seen_at: new Date().toISOString(),
   };
 
-  const up = await sb
+  let up = await sb
     .from('client_bots')
     .upsert(payload, { onConflict: 'subscription_id,hwid' })
     .select('id, remote_mods, client_mods')
     .maybeSingle();
+  // Backward-compatible fallback when DB migration for player_name has not been applied yet.
+  if (up.error && /player_name/i.test(String(up.error.message || ''))) {
+    const legacyPayload = { ...payload };
+    delete legacyPayload.player_name;
+    up = await sb
+      .from('client_bots')
+      .upsert(legacyPayload, { onConflict: 'subscription_id,hwid' })
+      .select('id, remote_mods, client_mods')
+      .maybeSingle();
+  }
   if (up.error) return json(res, 500, { ok: false, error: up.error.message });
 
   let remoteMods = up.data?.remote_mods || {};

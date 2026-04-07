@@ -6,6 +6,8 @@ let _currentUserId = null;
 let _selectedVT = 50;
 let _selectedBGL = 1.5;
 let _botStates = {};
+let _botRows = [];
+let _activeBotRow = null;
 
 const PM_VTOKENS = 'bgl';
 const DEVICE_SLOT_PRICE = 50;
@@ -257,11 +259,78 @@ async function loadProfile() {
     }
 
     renderProfile(user, profile, subs);
+    await refreshManageBots();
   } catch(e) {
     console.error(e);
     showToast('Error: ' + e.message);
     document.getElementById('loading-state').innerHTML = '<div style="color:#fca5a5;font-size:14px"><i class="fas fa-circle-exclamation"></i> Failed to load profile. <a href="store.html" style="color:var(--p)">Back to store</a></div>';
   }
+}
+
+async function refreshManageBots() {
+  const holder = document.getElementById('bots-content');
+  if (!holder) return;
+  if (!_sbInst || !_currentUserId) {
+    holder.innerHTML = '<div class="no-plan-notice"><i class="fas fa-robot"></i> Login required</div>';
+    return;
+  }
+  const q = await _sbInst
+    .from('client_bots')
+    .select('id, subscription_id, license_key, device_name, world_name, status, remote_mods, last_seen_at')
+    .eq('user_id', _currentUserId)
+    .order('last_seen_at', { ascending: false });
+  if (q.error) {
+    holder.innerHTML = '<div class="no-plan-notice"><i class="fas fa-circle-exclamation"></i> Failed to load bots</div>';
+    return;
+  }
+  _botRows = q.data || [];
+  if (_botRows.length === 0) {
+    holder.innerHTML = '<div class="no-plan-notice"><i class="fas fa-robot"></i> No client data yet. Open CodeX client after license login.</div>';
+    return;
+  }
+  holder.innerHTML = `<div class="bot-list">${_botRows.map((b, i) => `
+    <button type="button" onclick="openBotRemoteModal('${b.id}')" style="width:100%;text-align:left;background:rgba(168,85,247,.07);border:1px solid rgba(168,85,247,.2);border-radius:12px;padding:12px;cursor:pointer;color:inherit;font-family:inherit">
+      <div style="font-size:12px;color:var(--t2);margin-bottom:3px">Item ${i + 1}</div>
+      <div style="font-weight:700">${b.world_name || 'Unknown'}</div>
+      <div style="font-size:12px;color:${(b.status || 'Injected') === 'Online' ? '#10b981' : 'var(--y)'}">Status: ${b.status || 'Injected'}</div>
+      <div style="font-size:11px;color:var(--t2)">Device: ${b.device_name || 'Unknown'}</div>
+      <div style="font-size:11px;color:var(--t2)">Key: ${(b.license_key || 'Unknown').slice(0, 18)}...</div>
+    </button>
+  `).join('')}</div>`;
+}
+
+function closeBotRemoteModal() {
+  const m = document.getElementById('bot-remote-modal');
+  if (m) m.classList.remove('show');
+  _activeBotRow = null;
+}
+
+function openBotRemoteModal(rowId) {
+  const row = _botRows.find(x => x.id === rowId);
+  if (!row) return;
+  _activeBotRow = row;
+  const mods = row.remote_mods || {};
+  document.getElementById('bot-remote-sub').textContent = `${row.world_name || 'Unknown'} • ${row.device_name || 'Unknown'}`;
+  document.getElementById('bot-remote-body').innerHTML = `
+    <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="rm-god" ${mods.godmode ? 'checked' : ''}/> God Mode</label>
+    <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="rm-esp" ${mods.esp_players ? 'checked' : ''}/> ESP Players</label>
+    <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="rm-item" ${mods.esp_items ? 'checked' : ''}/> ESP Items</label>
+  `;
+  document.getElementById('bot-remote-modal').classList.add('show');
+}
+
+async function saveBotRemoteMods() {
+  if (!_sbInst || !_activeBotRow) return;
+  const remote_mods = {
+    godmode: !!document.getElementById('rm-god')?.checked,
+    esp_players: !!document.getElementById('rm-esp')?.checked,
+    esp_items: !!document.getElementById('rm-item')?.checked,
+  };
+  const up = await _sbInst.from('client_bots').update({ remote_mods }).eq('id', _activeBotRow.id);
+  if (up.error) { showToast(up.error.message); return; }
+  showToast('Remote mods saved.');
+  closeBotRemoteModal();
+  await refreshManageBots();
 }
 
 // ─────────────────────────────────────────
@@ -499,26 +568,7 @@ function renderProfile(user, profile, subs) {
     document.getElementById('keys-content').innerHTML = '';
     document.getElementById('keys-content').appendChild(keysContainer);
 
-    // ── Manage Bots ──
-    const bots = [
-      { id:'godmode',    name:'God Mode',    desc:'Invincible in all worlds',    icon:'fa-shield-halved', color:'rgba(168,85,247,.15)', col:'var(--p)', on:true  },
-      { id:'autofarm',   name:'Auto Farm',   desc:'Auto break & plant locks',    icon:'fa-wheat-awn',     color:'rgba(16,185,129,.1)',  col:'var(--g)', on:false },
-      { id:'antibounce', name:'Anti Bounce', desc:'Block bounce traps',          icon:'fa-ban',           color:'rgba(6,182,212,.1)',   col:'var(--c)', on:true  },
-      { id:'esp',        name:'ESP All',     desc:'See items through walls',     icon:'fa-eye',           color:'rgba(236,72,153,.1)', col:'var(--pk)',on:false },
-    ];
-    _botStates = {};
-    bots.forEach(b => _botStates[b.id] = b.on);
-    document.getElementById('bots-content').innerHTML = `<div class="bot-list">${bots.map(b => `
-      <div class="bot-item">
-        <div class="bot-left">
-          <div class="bot-ico" style="background:${b.color};color:${b.col}"><i class="fas ${b.icon}"></i></div>
-          <div>
-            <div class="bot-name">${b.name}</div>
-            <div class="bot-status ${b.on ? 'on' : ''}" id="bot-stat-${b.id}">${b.on ? '● Running' : '○ Stopped'}</div>
-          </div>
-        </div>
-        <button class="toggle ${b.on ? 'on' : ''}" id="toggle-${b.id}" onclick="toggleBot('${b.id}')"></button>
-      </div>`).join('')}</div>`;
+    document.getElementById('bots-content').innerHTML = '<div class="no-plan-notice"><i class="fas fa-robot"></i> Loading client data...</div>';
 
   } else {
     document.getElementById('upgrade-banner').style.display = 'flex';

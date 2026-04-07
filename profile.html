@@ -347,6 +347,18 @@ window._sb = createClient(
   </div>
 </div>
 
+<div class="modal-bg" id="bot-remote-modal" onclick="if(event.target===this)closeBotRemoteModal()">
+  <div class="modal" style="max-width:420px">
+    <button class="modal-close" onclick="closeBotRemoteModal()"><i class="fas fa-xmark"></i></button>
+    <h2><i class="fas fa-robot" style="color:var(--p);font-size:16px;margin-right:8px"></i>Remote Bot Control</h2>
+    <div class="modal-sub" id="bot-remote-sub">Unknown</div>
+    <div id="bot-remote-body" style="display:grid;gap:10px;margin-top:14px"></div>
+    <button class="submit-btn" onclick="saveBotRemoteMods()" style="margin-top:12px">
+      <i class="fas fa-floppy-disk"></i> SAVE REMOTE MODS
+    </button>
+  </div>
+</div>
+
 <div class="toast" id="toast"></div>
 
 <script src="js/profile.js"></script>

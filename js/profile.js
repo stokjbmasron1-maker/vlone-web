@@ -14,6 +14,7 @@ let _botActiveControls = [];
 let _botsNextRefreshAt = 0;
 let _botsCountdownTimer = null;
 const BOTS_REFRESH_MS = 3000;
+const BOTS_ACTIVE_WINDOW_MS = 7000;
 
 const PM_VTOKENS = 'bgl';
 const DEVICE_SLOT_PRICE = 50;
@@ -189,24 +190,23 @@ function formatBotLastSeen(ts) {
 function botDisplayName(row) {
   const player = row && row.player_name ? String(row.player_name).trim() : '';
   if (player && player.toLowerCase() !== 'unknown') return player;
-  const cm = row && row.client_mods && typeof row.client_mods === 'object' ? row.client_mods : {};
-  const metaPlayer = cm.__player_name ? String(cm.__player_name).trim() : '';
-  if (metaPlayer && metaPlayer.toLowerCase() !== 'unknown') return metaPlayer;
-  return 'Unknown';
+  const world = row && row.world_name ? String(row.world_name).trim() : '';
+  if (world && world.toLowerCase() !== 'unknown') {
+    const idx = world.indexOf(' @ ');
+    if (idx > 0) return world.slice(0, idx);
+    return world;
+  }
+  const dev = row && row.device_name ? String(row.device_name).trim() : '';
+  if (dev && dev.toLowerCase() !== 'unknown') return dev.replace(/^PC-/i, '');
+  return 'Player';
 }
 
 function botWorldLabel(row) {
   const world = row && row.world_name ? String(row.world_name).trim() : '';
-  if (!world || world.toLowerCase() === 'unknown') return 'Unknown';
+  if (!world || world.toLowerCase() === 'unknown') return '-';
+  const idx = world.indexOf(' @ ');
+  if (idx > 0) return world.slice(idx + 3);
   return world;
-}
-function botWorldFromAny(row) {
-  const w = botWorldLabel(row);
-  if (w && w.toLowerCase() !== 'unknown') return w;
-  const cm = row && row.client_mods && typeof row.client_mods === 'object' ? row.client_mods : {};
-  const metaWorld = cm.__world_name ? String(cm.__world_name).trim() : '';
-  if (metaWorld && metaWorld.toLowerCase() !== 'unknown') return metaWorld;
-  return 'Unknown';
 }
 
 function deviceSlotsUsedMax(s) {
@@ -445,32 +445,13 @@ async function refreshManageBots() {
     holder.innerHTML = '<div class="no-plan-notice"><i class="fas fa-robot"></i> Login required</div>';
     return;
   }
-  const freshCutoffIso = new Date(Date.now() - 60000).toISOString();
-  let q = await _sbInst
+  const freshCutoffIso = new Date(Date.now() - BOTS_ACTIVE_WINDOW_MS).toISOString();
+  const q = await _sbInst
     .from('client_bots')
     .select('id, subscription_id, license_key, player_name, device_name, world_name, status, remote_mods, client_mods, last_seen_at')
     .eq('user_id', _currentUserId)
     .gte('last_seen_at', freshCutoffIso)
     .order('last_seen_at', { ascending: false });
-  // Backward-compatible fallback when player_name column isn't migrated yet.
-  if (q.error && /player_name/i.test(String(q.error.message || ''))) {
-    q = await _sbInst
-      .from('client_bots')
-      .select('id, subscription_id, license_key, device_name, world_name, status, remote_mods, client_mods, last_seen_at')
-      .eq('user_id', _currentUserId)
-      .gte('last_seen_at', freshCutoffIso)
-      .order('last_seen_at', { ascending: false });
-  }
-  if (!q.error && Array.isArray(q.data) && q.data.length === 0) {
-    // If no rows in freshness window, fallback to latest known rows
-    // so UI still shows bots while client reconnects.
-    q = await _sbInst
-      .from('client_bots')
-      .select('id, subscription_id, license_key, device_name, world_name, status, remote_mods, client_mods, last_seen_at')
-      .eq('user_id', _currentUserId)
-      .order('last_seen_at', { ascending: false })
-      .limit(20);
-  }
   if (q.error) {
     const em = String(q.error.message || '').replace(/</g, '&lt;');
     holder.innerHTML = `<div class="no-plan-notice"><i class="fas fa-circle-exclamation"></i> Failed to load bots<br><span style="font-size:11px;color:var(--t2)">${em || 'Unknown error'}</span></div>`;
@@ -485,7 +466,6 @@ async function refreshManageBots() {
   }
   holder.innerHTML = `<div class="bot-list">${_botRows.map((b, i) => {
     const device = prettyUnknown(b.device_name);
-    const world = botWorldFromAny(b);
     const status = prettyUnknown(b.status, 'Injected');
     const statusColor = status === 'Online' ? '#10b981' : 'var(--y)';
     const keyShort = prettyUnknown(b.license_key).slice(0, 18);
@@ -496,7 +476,6 @@ async function refreshManageBots() {
         <div class="bot-card-status" style="color:${statusColor}"><i class="fas fa-circle"></i> ${escHtml(status)}</div>
       </div>
       <div class="bot-card-world">${escHtml(botDisplayName(b))}</div>
-      <div class="bot-card-meta">World: ${escHtml(world)}</div>
       <div class="bot-card-meta">Device: ${escHtml(device)}</div>
       <div class="bot-card-meta">Key: ${escHtml(keyShort)}...</div>
       <div class="bot-card-meta">Seen: ${escHtml(formatBotLastSeen(b.last_seen_at))}</div>
@@ -565,7 +544,7 @@ function renderBotRemoteForm(mods) {
     Settings: 'fa-gear',
   };
   const info = _activeBotRow || {};
-  const world = botWorldFromAny(info);
+  const world = prettyUnknown(info.world_name);
   const device = prettyUnknown(info.device_name);
   const status = prettyUnknown(info.status, 'Injected');
   const keyText = prettyUnknown(info.license_key);
@@ -653,7 +632,7 @@ function openBotRemoteModal(rowId) {
   if (!row) return;
   _activeBotRow = row;
   const mods = resolveBotMods(row);
-  document.getElementById('bot-remote-sub').textContent = `${botDisplayName(row)} • ${botWorldFromAny(row)}`;
+  document.getElementById('bot-remote-sub').textContent = `${botDisplayName(row)} • ${prettyUnknown(row.device_name)}`;
   updateBotsRefreshMeta();
   renderBotRemoteForm(mods);
   document.getElementById('bot-remote-modal').classList.add('show');

@@ -39,15 +39,10 @@ export default async function handler(req, res) {
   const body = req.body && typeof req.body === 'object' ? req.body : {};
   const key = normalizeKey(body.key);
   const hwid = typeof body.hwid === 'string' ? body.hwid.trim() : '';
-  const player = typeof body.player_name === 'string' && body.player_name.trim() ? body.player_name.trim().slice(0, 128) : 'Unknown';
   const device = typeof body.device_name === 'string' && body.device_name.trim() ? body.device_name.trim().slice(0, 128) : 'Unknown';
   const world = typeof body.world_name === 'string' && body.world_name.trim() ? body.world_name.trim().slice(0, 128) : 'Unknown';
-  const clientModsRaw = body.client_mods && typeof body.client_mods === 'object' ? body.client_mods : {};
-  const clientMods = {
-    ...clientModsRaw,
-    __player_name: player,
-    __world_name: world,
-  };
+  const playerName = typeof body.player_name === 'string' && body.player_name.trim() ? body.player_name.trim().slice(0, 64) : 'Unknown';
+  const clientMods = body.client_mods && typeof body.client_mods === 'object' ? body.client_mods : {};
   if (!key || hwid.length < 8) return json(res, 400, { ok: false, error: 'Bad payload' });
 
   const sb = createClient(url, serviceKey, { auth: { persistSession: false, autoRefreshToken: false } });
@@ -70,35 +65,19 @@ export default async function handler(req, res) {
     user_id: sub.user_id,
     license_key: key,
     hwid,
-    player_name: player,
     device_name: device,
     world_name: world,
+    player_name: playerName,
     status,
     client_mods: clientMods,
     last_seen_at: new Date().toISOString(),
   };
 
-  let up = await sb
+  const up = await sb
     .from('client_bots')
     .upsert(payload, { onConflict: 'subscription_id,hwid' })
     .select('id, remote_mods, client_mods')
     .maybeSingle();
-  // Backward-compatible fallback when DB migration for player_name has not been applied yet.
-  const upErrMsg = String(up.error?.message || '');
-  if (
-    up.error &&
-    (/player_name/i.test(upErrMsg) ||
-      /column .* does not exist/i.test(upErrMsg) ||
-      /schema cache/i.test(upErrMsg))
-  ) {
-    const legacyPayload = { ...payload };
-    delete legacyPayload.player_name;
-    up = await sb
-      .from('client_bots')
-      .upsert(legacyPayload, { onConflict: 'subscription_id,hwid' })
-      .select('id, remote_mods, client_mods')
-      .maybeSingle();
-  }
   if (up.error) return json(res, 500, { ok: false, error: up.error.message });
 
   let remoteMods = up.data?.remote_mods || {};

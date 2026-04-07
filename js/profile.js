@@ -189,15 +189,7 @@ function formatBotLastSeen(ts) {
 function botDisplayName(row) {
   const player = row && row.player_name ? String(row.player_name).trim() : '';
   if (player && player.toLowerCase() !== 'unknown') return player;
-  const world = row && row.world_name ? String(row.world_name).trim() : '';
-  if (world && world.toLowerCase() !== 'unknown') {
-    const idx = world.indexOf(' @ ');
-    if (idx > 0) return world.slice(0, idx);
-    return world;
-  }
-  const dev = row && row.device_name ? String(row.device_name).trim() : '';
-  if (dev && dev.toLowerCase() !== 'unknown') return dev.replace(/^PC-/i, '');
-  return 'Player';
+  return 'Unknown';
 }
 
 function botWorldLabel(row) {
@@ -483,7 +475,6 @@ async function refreshManageBots() {
     return;
   }
   holder.innerHTML = `<div class="bot-list">${_botRows.map((b, i) => {
-    const world = botWorldLabel(b);
     const device = prettyUnknown(b.device_name);
     const status = prettyUnknown(b.status, 'Injected');
     const statusColor = status === 'Online' ? '#10b981' : 'var(--y)';
@@ -495,7 +486,6 @@ async function refreshManageBots() {
         <div class="bot-card-status" style="color:${statusColor}"><i class="fas fa-circle"></i> ${escHtml(status)}</div>
       </div>
       <div class="bot-card-world">${escHtml(botDisplayName(b))}</div>
-      <div class="bot-card-meta">Tile: ${escHtml(world)}</div>
       <div class="bot-card-meta">Device: ${escHtml(device)}</div>
       <div class="bot-card-meta">Key: ${escHtml(keyShort)}...</div>
       <div class="bot-card-meta">Seen: ${escHtml(formatBotLastSeen(b.last_seen_at))}</div>

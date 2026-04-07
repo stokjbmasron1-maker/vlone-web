@@ -234,6 +234,16 @@ async function loadProfile() {
         .eq('is_active', true)
         .order('expires_at', { ascending: false });
       subs = subsData || [];
+      // Backfill missing trial/legacy keys so displayed keys are always verifiable by API.
+      for (const s of subs) {
+        if (!s || !s.id) continue;
+        if (s.license_key && String(s.license_key).trim()) continue;
+        const id8 = String(s.id).replace(/-/g, '').substring(0, 8).toUpperCase();
+        const pl3 = (s.plan || 'UNK').substring(0, 3).toUpperCase();
+        const k = `CODEX-${id8}-${pl3}`;
+        const upd = await _sbInst.from('subscriptions').update({ license_key: k }).eq('id', s.id);
+        if (!upd.error) s.license_key = k;
+      }
     } else {
       const tok = getSBToken();
       if (tok && tok.user) {

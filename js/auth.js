@@ -81,22 +81,20 @@ async function doLogin() {
   var user = document.getElementById('l-user').value.trim();
   var pass = document.getElementById('l-pass').value;
   if (!user || !pass) { showMsg('Please fill in all fields.'); return; }
+  if (user.includes('@')) { showMsg('Login must use username, not email.'); return; }
   setLoading('login-btn', 'login-spin', 'login-icon', true);
   try {
     var sb = getSB();
     if (sb) {
-      var email = user;
-      if (!user.includes('@')) {
-        var lu = await sb.rpc('get_email_by_username', { u: user });
-        if (lu.error) {
-          console.warn('get_email_by_username', lu.error);
-          showMsg('Login with username unavailable. Run SQL in supabase/rpc_login_username.sql or use your email.');
-          setLoading('login-btn', 'login-spin', 'login-icon', false);
-          return;
-        }
-        if (!lu.data) { showMsg('Incorrect username or password.'); setLoading('login-btn','login-spin','login-icon',false); return; }
-        email = lu.data;
+      var lu = await sb.rpc('get_email_by_username', { u: user });
+      if (lu.error) {
+        console.warn('get_email_by_username', lu.error);
+        showMsg('Username login unavailable. Run SQL in supabase/rpc_login_username.sql.');
+        setLoading('login-btn', 'login-spin', 'login-icon', false);
+        return;
       }
+      if (!lu.data) { showMsg('Incorrect username or password.'); setLoading('login-btn','login-spin','login-icon',false); return; }
+      var email = lu.data;
       var r = await sb.auth.signInWithPassword({ email, password: pass });
       if (r.error) throw r.error;
     } else {
@@ -139,7 +137,21 @@ async function doRegister() {
       await new Promise(function(w){ setTimeout(w,1000); });
       try {
         var exp = new Date(Date.now()+86400000).toISOString();
-        await sb.from('subscriptions').insert({ user_id:r.data.user.id, plan:'trial', tokens_paid:0, payment_method:'free', is_active:true, expires_at:exp, started_at:new Date().toISOString(), max_devices:1 });
+        var trialIns = await sb.from('subscriptions').insert({
+          user_id:r.data.user.id,
+          plan:'trial',
+          tokens_paid:0,
+          payment_method:'free',
+          is_active:true,
+          expires_at:exp,
+          started_at:new Date().toISOString(),
+          max_devices:1
+        }).select('id').single();
+        if (!trialIns.error && trialIns.data && trialIns.data.id) {
+          var tid = String(trialIns.data.id).replace(/-/g,'').substring(0,8).toUpperCase();
+          var tkey = 'CODEX-' + tid + '-TRI';
+          await sb.from('subscriptions').update({ license_key: tkey }).eq('id', trialIns.data.id);
+        }
       } catch(subErr) { console.warn('Trial insert failed:',subErr.message); }
       showMsg('✅ Account created! Activating your free trial...','ok');
       setTimeout(function(){ location.href='store.html?trial=activated'; },1800);

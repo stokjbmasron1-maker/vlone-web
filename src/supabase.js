@@ -1,5 +1,5 @@
 // =====================================================
-// SUPABASE CONFIG — VLONE Cheats
+// SUPABASE CONFIG — CodeX Cheats
 // =====================================================
 // 1. Go to https://supabase.com → New Project
 // 2. Copy your Project URL and anon/public key below

@@ -1,5 +1,5 @@
 -- =============================================================================
--- VLONE — apply all DB patches (Supabase → SQL Editor)
+-- CodeX — apply all DB patches (Supabase → SQL Editor)
 -- Safe to re-run: uses IF NOT EXISTS / DROP POLICY IF EXISTS where needed.
 --
 -- Also run (once per project), in any order after base tables exist:

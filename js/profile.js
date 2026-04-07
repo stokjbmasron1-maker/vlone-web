@@ -81,7 +81,7 @@ function linkedDevicesForSubscription(s) {
     rows.push({
       id: null,
       title: 'No device linked yet',
-      sub: 'Open the VLONE client on your PC and verify this key once.',
+      sub: 'Open the CodeX client on your PC and verify this key once.',
     });
   }
   return rows;
@@ -239,7 +239,7 @@ async function loadProfile() {
       if (tok && tok.user) {
         user = tok.user;
       } else {
-        const ls = JSON.parse(localStorage.getItem('vlone_session') || 'null');
+        const ls = JSON.parse(localStorage.getItem('codex_session') || 'null');
         if (!ls) { location.href = 'auth.html'; return; }
         user = { email: ls.email, user_metadata: { username: ls.username, pw_username: ls.pwUsername }, created_at: new Date(ls.createdAt).toISOString() };
         profile = { username: ls.username, email: ls.email, pw_username: ls.pwUsername, vtokens: 0, created_at: user.created_at };
@@ -991,7 +991,7 @@ function copyText(text) { navigator.clipboard.writeText(text).then(() => showToa
 
 async function doLogout() {
   if (_sbInst) await _sbInst.auth.signOut();
-  localStorage.removeItem('vlone_session');
+  localStorage.removeItem('codex_session');
   localStorage.removeItem('sb-eyqvcsfebrwsemiwkajg-auth-token');
   location.href = 'store.html';
 }

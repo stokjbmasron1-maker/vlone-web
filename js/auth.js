@@ -4,14 +4,14 @@
 function getSB() { return window._sb || null; }
 
 // localStorage fallback
-function getUsers() { return JSON.parse(localStorage.getItem('vlone_users') || '{}'); }
-function saveUsers(u) { localStorage.setItem('vlone_users', JSON.stringify(u)); }
-function setLocalSess(u) { localStorage.setItem('vlone_session', JSON.stringify(u)); }
-function getLocalSess() { return JSON.parse(localStorage.getItem('vlone_session') || 'null'); }
+function getUsers() { return JSON.parse(localStorage.getItem('codex_users') || '{}'); }
+function saveUsers(u) { localStorage.setItem('codex_users', JSON.stringify(u)); }
+function setLocalSess(u) { localStorage.setItem('codex_session', JSON.stringify(u)); }
+function getLocalSess() { return JSON.parse(localStorage.getItem('codex_session') || 'null'); }
 
 function redirectAfterAuth() {
-  var r = localStorage.getItem('vlone_redirect') || 'store.html';
-  localStorage.removeItem('vlone_redirect');
+  var r = localStorage.getItem('codex_redirect') || 'store.html';
+  localStorage.removeItem('codex_redirect');
   location.href = r;
 }
 

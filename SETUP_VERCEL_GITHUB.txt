@@ -1,5 +1,5 @@
 ================================================================================
-VLONE — Hubungkan GitHub (akun A) + Vercel (akun B) — beda email boleh
+CodeX — Hubungkan GitHub (akun A) + Vercel (akun B) — beda email boleh
 ================================================================================
 
 Intinya: login Vercel pakai akun Vercel kamu. Waktu "Import Git Repository",
@@ -27,16 +27,16 @@ Kalau mau perbaiki author commit terakhir setelah ubah config:
 2) Buat repo kosong di GitHub (akun yang punya kode)
 --------------------------------------------------------------------------------
 - Buka https://github.com/new
-- Nama repo: misalnya vlone-web (huruf kecil, tanpa spasi)
+- Nama repo: misalnya codex-web (huruf kecil, tanpa spasi)
 - Jangan centang README / .gitignore / license (repo benar-benar kosong)
 - Create repository
 
 --------------------------------------------------------------------------------
 3) Push kode dari PC ke GitHub
 --------------------------------------------------------------------------------
-Ganti YOUR_USER dan vlone-web dengan username GitHub & nama repo kamu:
+Ganti YOUR_USER dan codex-web dengan username GitHub & nama repo kamu:
 
-  git remote add origin https://github.com/YOUR_USER/vlone-web.git
+  git remote add origin https://github.com/YOUR_USER/codex-web.git
   git push -u origin main
 
 Kalau GitHub minta login: pakai akun GitHub yang sama dengan pemilik repo.
@@ -47,7 +47,7 @@ Kalau GitHub minta login: pakai akun GitHub yang sama dengan pemilik repo.
 - Login https://vercel.com dengan akun Vercel
 - Add New Project → Import Git Repository
 - Kalau GitHub belum terhubung: Continue with GitHub → login dengan AKUN GITHUB
-  yang punya repo vlone-web (boleh beda dari email Vercel)
+  yang punya repo codex-web (boleh beda dari email Vercel)
 - Pilih repo → Deploy
 
 Build otomatis memakai vercel.json:
@@ -73,7 +73,7 @@ diberi akses ke repo kamu. Kerjakan berurutan:
 
 A) Di halaman Import Vercel — dropdown kiri atas
    - Klik akun atau organisasi di pojok kiri atas (bukan menu Vercel).
-   - Pilih user GitHub yang BENAR-BENAR memiliki repo VLONE (bukan akun lain).
+   - Pilih user GitHub yang BENAR-BENAR memiliki repo CodeX (bukan akun lain).
    - Kalau baru pertama kali: pilih "Add GitHub Account" / hubungkan akun lain.
 
 B) Pastikan repo sudah ADA di GitHub (sudah push dari PC)
@@ -84,7 +84,7 @@ C) Beri Vercel akses ke repo (paling sering ini penyebabnya)
      Applications → Installed GitHub Apps → Vercel → Configure.
    - Bagian "Repository access":
      * Pilih "All repositories" (paling gampang), ATAU
-     * "Only select repositories" → Add repository → pilih repo vlone-web (dll).
+     * "Only select repositories" → Add repository → pilih repo codex-web (dll).
    - Save.
 
 D) Putus lalu sambung lagi (kalau A+C belum berhasil)

@@ -1,5 +1,5 @@
 -- =====================================================
--- VLONE CHEATS — Supabase Database Schema
+-- CodeX CHEATS — Supabase Database Schema
 -- Run this in Supabase → SQL Editor
 -- =====================================================
 

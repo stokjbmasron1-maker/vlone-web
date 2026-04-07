@@ -7,7 +7,7 @@ const __dirname = dirname(fileURLToPath(import.meta.url));
 /** Dev: / langsung ke store. Admin: /admin.html */
 function rootToStorePlugin() {
   return {
-    name: 'vlone-root-to-store',
+    name: 'codex-root-to-store',
     configureServer(server) {
       server.middlewares.use((req, _res, next) => {
         const url = req.url || '';

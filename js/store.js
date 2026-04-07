@@ -162,7 +162,7 @@ function updatePricingCards(vt, sub) {
   // ── Monthly button ──
   const monthBtn = document.getElementById('monthly-btn');
   if (monthBtn) {
-    if (!_storeUserId) { monthBtn.onclick=()=>{localStorage.setItem('vlone_redirect','store.html#pricing');location.href='auth.html';}; }
+    if (!_storeUserId) { monthBtn.onclick=()=>{localStorage.setItem('codex_redirect','store.html#pricing');location.href='auth.html';}; }
     else if (vt >= 299) {
       monthBtn.innerHTML='<i class="fas fa-coins"></i> Buy Monthly (299 VT)';
       monthBtn.disabled=false; monthBtn.style.opacity=''; monthBtn.style.pointerEvents='';
@@ -177,7 +177,7 @@ function updatePricingCards(vt, sub) {
   // ── Lifetime button ──
   const lifeBtn = document.getElementById('lifetime-btn');
   if (lifeBtn) {
-    if (!_storeUserId) { lifeBtn.onclick=()=>{localStorage.setItem('vlone_redirect','store.html#pricing');location.href='auth.html';}; }
+    if (!_storeUserId) { lifeBtn.onclick=()=>{localStorage.setItem('codex_redirect','store.html#pricing');location.href='auth.html';}; }
     else if (vt >= 499) {
       lifeBtn.innerHTML='<i class="fas fa-crown"></i> Buy Lifetime (499 VT)';
       lifeBtn.disabled=false; lifeBtn.style.opacity=''; lifeBtn.style.pointerEvents='';
@@ -211,7 +211,7 @@ function makeKey(id, plan) {
 // ─────────────────────────────────────────
 function sOpenPlan(plan) {
   if (!_storeUserId) {
-    localStorage.setItem('vlone_redirect', 'store.html#pricing');
+    localStorage.setItem('codex_redirect', 'store.html#pricing');
     location.href = 'auth.html';
     return;
   }

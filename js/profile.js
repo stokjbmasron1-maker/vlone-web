@@ -10,9 +10,80 @@ let _botRows = [];
 let _activeBotRow = null;
 let _manageBotsPollTimer = null;
 let _botModalDirty = false;
+let _botActiveControls = [];
 
 const PM_VTOKENS = 'bgl';
 const DEVICE_SLOT_PRICE = 50;
+
+const BOT_REMOTE_FIELDS = [
+  { key: 'godmode', label: 'God mode', type: 'bool', section: 'Main' },
+  { key: 'feat_anti_lava_bounce', label: 'No hot / lava bounce damage', type: 'bool', section: 'Main' },
+  { key: 'feat_anti_spring', label: 'No spring blocks', type: 'bool', section: 'Main' },
+  { key: 'feat_anti_swim', label: 'No swimming blocks', type: 'bool', section: 'Main' },
+  { key: 'feat_anti_elevator', label: 'No elevators', type: 'bool', section: 'Main' },
+  { key: 'feat_anti_pinball', label: 'No pinball', type: 'bool', section: 'Main' },
+  { key: 'feat_anti_trampoline', label: 'No trampoline', type: 'bool', section: 'Main' },
+  { key: 'feat_anti_wind', label: 'No wind', type: 'bool', section: 'Main' },
+  { key: 'feat_anti_elastic', label: 'No elastic', type: 'bool', section: 'Main' },
+  { key: 'feat_anti_darkness', label: 'Anti darkness', type: 'bool', section: 'Main' },
+  { key: 'speed_hack_multiplier', label: 'Move speed', type: 'float', section: 'Main', min: 0, max: 1.10, step: 0.01 },
+  { key: 'break_speed_cap_multiplier', label: 'Break speed', type: 'float', section: 'Main', min: 0, max: 2, step: 0.01 },
+  { key: 'jump_mode_override', label: 'Jump mode', type: 'enum', section: 'Main', values: [-1, 0, 1, 2, 3, 4, 6, 7], labels: ['Game default', 'Normal', 'Double', 'Long jump', 'Parachute', 'Rocket', 'Triple', 'Mount flying'] },
+  { key: 'feat_infinite_jump', label: 'Infinite jump', type: 'bool', section: 'Main' },
+  { key: 'feat_anti_jump', label: 'Never grounded', type: 'bool', section: 'Main' },
+  { key: 'feat_anti_inverted_controls', label: 'No inverted controls', type: 'bool', section: 'Main' },
+
+  { key: 'esp_include_self', label: 'Draw box on local player', type: 'bool', section: 'Visual' },
+  { key: 'esp_show_other_players', label: 'Draw boxes on other players', type: 'bool', section: 'Visual' },
+  { key: 'esp_show_tracer_lines', label: 'Player tracer lines', type: 'bool', section: 'Visual' },
+  { key: 'esp_tracer_line_mode', label: 'Tracer mode', type: 'enum', section: 'Visual', values: [0, 1, 2], labels: ['Visible', 'Non-visible', 'Both'] },
+  { key: 'esp_tracer_line_thickness', label: 'Tracer line thickness', type: 'float', section: 'Visual', min: 0.5, max: 4, step: 0.05 },
+  { key: 'esp_show_player_names', label: 'Show player names', type: 'bool', section: 'Visual' },
+  { key: 'esp_show_player_health_bar', label: 'Show health bar', type: 'bool', section: 'Visual' },
+  { key: 'esp_collectable_items', label: 'World collectables', type: 'bool', section: 'Visual' },
+  { key: 'esp_item_show_labels', label: 'Show item labels', type: 'bool', section: 'Visual' },
+  { key: 'esp_item_show_tracer_lines', label: 'Item tracer lines', type: 'bool', section: 'Visual' },
+  { key: 'esp_nether_monsters', label: 'Esp monster', type: 'bool', section: 'Visual' },
+  { key: 'esp_nether_monster_tracer_lines', label: 'Monster tracer', type: 'bool', section: 'Visual' },
+  { key: 'esp_nether_gift_box', label: 'Nether gift box', type: 'bool', section: 'Visual' },
+  { key: 'esp_nether_gift_tracer_lines', label: 'Gift tracer', type: 'bool', section: 'Visual' },
+  { key: 'esp_nether_exit_gate', label: 'Exit gate', type: 'bool', section: 'Visual' },
+  { key: 'esp_nether_exit_tracer_lines', label: 'Exit tracer', type: 'bool', section: 'Visual' },
+  { key: 'esp_nether_gift_swap_tile_xy', label: 'Gift tile swap X/Y', type: 'bool', section: 'Visual' },
+  { key: 'esp_nether_gift_world_offset_x', label: 'Gift world offset X', type: 'float', section: 'Visual', min: -64, max: 64, step: 0.5 },
+  { key: 'esp_nether_gift_world_offset_y', label: 'Gift world offset Y', type: 'float', section: 'Visual', min: -64, max: 64, step: 0.5 },
+  { key: 'esp_nether_gift_box_offset_x_px', label: 'Gift box offset X', type: 'float', section: 'Visual', min: -80, max: 80, step: 0.5 },
+  { key: 'esp_nether_gift_box_offset_y_px', label: 'Gift box offset Y', type: 'float', section: 'Visual', min: -80, max: 80, step: 0.5 },
+
+  { key: 'feat_always_swim', label: 'Always treat as swimming', type: 'bool', section: 'Fun' },
+  { key: 'feat_sticky_pinball', label: 'Sticky pinball', type: 'bool', section: 'Fun' },
+  { key: 'feat_always_trampoline', label: 'Always trampoline', type: 'bool', section: 'Fun' },
+  { key: 'feat_zero_gravity_wind', label: 'Wind acts low-gravity', type: 'bool', section: 'Fun' },
+  { key: 'feat_sticky_elastic', label: 'Sticky elastic', type: 'bool', section: 'Fun' },
+  { key: 'feat_place_seed_in_air', label: 'Place seeds in air', type: 'bool', section: 'Fun' },
+
+  { key: 'feat_trap_always_off', label: 'Traps always off', type: 'bool', section: 'World' },
+  { key: 'feat_no_trap_projectile', label: 'Block trap projectiles', type: 'bool', section: 'World' },
+  { key: 'feat_no_poison', label: 'Block poison effects', type: 'bool', section: 'World' },
+  { key: 'feat_no_lighting_delta', label: 'Ignore lighting changes', type: 'bool', section: 'World' },
+  { key: 'feat_no_fog_of_war', label: 'No fog of war', type: 'bool', section: 'World' },
+  { key: 'feat_local_edit_world', label: 'Bypass minor lock (edit world)', type: 'bool', section: 'World' },
+
+  { key: 'feat_unlock_recipes', label: 'Unlock all recipes (client)', type: 'bool', section: 'Misc' },
+  { key: 'feat_anti_afk_kick', label: 'Ignore inactivity kick', type: 'bool', section: 'Misc' },
+  { key: 'feat_anti_chat_censor', label: 'Disable chat profanity filter', type: 'bool', section: 'Misc' },
+  { key: 'feat_anti_checkpoints', label: 'Ignore checkpoints', type: 'bool', section: 'Misc' },
+  { key: 'feat_anti_portals', label: 'Ignore portals', type: 'bool', section: 'Misc' },
+  { key: 'feat_anti_pick_collect', label: 'Block collectable pickup send', type: 'bool', section: 'Misc' },
+
+  { key: 'feat_fish_freeze_velocity', label: 'Freeze fish velocity', type: 'bool', section: 'Fish' },
+  { key: 'feat_fish_freeze_position', label: 'Freeze fish position', type: 'bool', section: 'Fish' },
+  { key: 'feat_fish_no_random_target', label: 'No random target point', type: 'bool', section: 'Fish' },
+
+  { key: 'gui_opacity', label: 'Interface transparency', type: 'float', section: 'Settings', min: 0.35, max: 1.0, step: 0.01 },
+  { key: 'gui_font_scale', label: 'Font scale', type: 'float', section: 'Settings', min: 0.75, max: 1.5, step: 0.01 },
+  { key: 'gui_show_quick_hud', label: 'Show compact quick panel', type: 'bool', section: 'Settings' },
+];
 
 async function waitForSB(ms = 5000) {
   const t = Date.now();
@@ -309,6 +380,85 @@ function closeBotRemoteModal() {
   if (m) m.classList.remove('show');
   _activeBotRow = null;
   _botModalDirty = false;
+  _botActiveControls = [];
+}
+
+function readValueForField(mods, field) {
+  const v = mods && Object.prototype.hasOwnProperty.call(mods, field.key) ? mods[field.key] : undefined;
+  if (field.type === 'bool') return !!v;
+  if (field.type === 'float') return typeof v === 'number' ? v : (field.min ?? 0);
+  if (field.type === 'enum') return typeof v === 'number' ? v : field.values[0];
+  return v;
+}
+
+function renderBotRemoteForm(mods) {
+  const body = document.getElementById('bot-remote-body');
+  if (!body) return;
+  _botActiveControls = BOT_REMOTE_FIELDS;
+  const sections = {};
+  for (const f of BOT_REMOTE_FIELDS) {
+    if (!sections[f.section]) sections[f.section] = [];
+    sections[f.section].push(f);
+  }
+  const sectionOrder = ['Main', 'Visual', 'Fun', 'World', 'Misc', 'Fish', 'Settings'];
+  body.innerHTML = sectionOrder
+    .filter((s) => sections[s] && sections[s].length)
+    .map((section) => {
+      const controls = sections[section]
+        .map((field) => {
+          const id = `rm-${field.key}`;
+          const val = readValueForField(mods, field);
+          if (field.type === 'bool') {
+            return `<label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="${id}" ${val ? 'checked' : ''}/> ${escHtml(field.label)}</label>`;
+          }
+          if (field.type === 'float') {
+            return `<label style="display:grid;gap:6px">
+              <span>${escHtml(field.label)}</span>
+              <input type="range" id="${id}" min="${field.min}" max="${field.max}" step="${field.step || 0.01}" value="${Number(val)}" />
+              <span id="${id}-val" style="font-size:11px;color:var(--t2)">${Number(val).toFixed(2)}</span>
+            </label>`;
+          }
+          if (field.type === 'enum') {
+            return `<label style="display:grid;gap:6px">
+              <span>${escHtml(field.label)}</span>
+              <select id="${id}" style="background:rgba(18,18,24,.9);border:1px solid rgba(168,85,247,.24);border-radius:8px;color:var(--t1);padding:8px">
+                ${field.values.map((v, i) => `<option value="${v}" ${Number(val) === Number(v) ? 'selected' : ''}>${escHtml(field.labels[i])}</option>`).join('')}
+              </select>
+            </label>`;
+          }
+          return '';
+        })
+        .join('');
+      return `<div style="border:1px solid rgba(168,85,247,.18);border-radius:10px;padding:10px;display:grid;gap:10px">
+        <div style="font-size:12px;font-weight:700;color:var(--p)">${escHtml(section)}</div>
+        ${controls}
+      </div>`;
+    })
+    .join('');
+  for (const field of BOT_REMOTE_FIELDS) {
+    const id = `rm-${field.key}`;
+    const el = document.getElementById(id);
+    if (!el) continue;
+    el.addEventListener('change', () => {
+      _botModalDirty = true;
+      if (field.type === 'float') {
+        const lv = document.getElementById(`${id}-val`);
+        if (lv) lv.textContent = Number(el.value || 0).toFixed(2);
+      }
+    });
+  }
+}
+
+function collectRemoteModsFromForm() {
+  const remote_mods = {};
+  for (const field of _botActiveControls) {
+    const el = document.getElementById(`rm-${field.key}`);
+    if (!el) continue;
+    if (field.type === 'bool') remote_mods[field.key] = !!el.checked;
+    else if (field.type === 'float') remote_mods[field.key] = Number(el.value || 0);
+    else if (field.type === 'enum') remote_mods[field.key] = Number(el.value || 0);
+  }
+  return remote_mods;
 }
 
 function openBotRemoteModal(rowId) {
@@ -317,25 +467,13 @@ function openBotRemoteModal(rowId) {
   _activeBotRow = row;
   const mods = (row.remote_mods && Object.keys(row.remote_mods).length) ? row.remote_mods : (row.client_mods || {});
   document.getElementById('bot-remote-sub').textContent = `${row.world_name || 'Unknown'} • ${row.device_name || 'Unknown'}`;
-  document.getElementById('bot-remote-body').innerHTML = `
-    <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="rm-god" ${mods.godmode ? 'checked' : ''}/> God Mode</label>
-    <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="rm-esp" ${mods.esp_players ? 'checked' : ''}/> ESP Players</label>
-    <label style="display:flex;align-items:center;gap:8px"><input type="checkbox" id="rm-item" ${mods.esp_items ? 'checked' : ''}/> ESP Items</label>
-  `;
-  ['rm-god','rm-esp','rm-item'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.addEventListener('change', () => { _botModalDirty = true; });
-  });
+  renderBotRemoteForm(mods);
   document.getElementById('bot-remote-modal').classList.add('show');
 }
 
 async function saveBotRemoteMods() {
   if (!_sbInst || !_activeBotRow) return;
-  const remote_mods = {
-    godmode: !!document.getElementById('rm-god')?.checked,
-    esp_players: !!document.getElementById('rm-esp')?.checked,
-    esp_items: !!document.getElementById('rm-item')?.checked,
-  };
+  const remote_mods = collectRemoteModsFromForm();
   const up = await _sbInst.from('client_bots').update({ remote_mods }).eq('id', _activeBotRow.id);
   if (up.error) { showToast(up.error.message); return; }
   showToast('Remote mods saved.');
@@ -1108,12 +1246,7 @@ if (!_manageBotsPollTimer) {
       if (latest) {
         _activeBotRow = latest;
         const mods = (latest.remote_mods && Object.keys(latest.remote_mods).length) ? latest.remote_mods : (latest.client_mods || {});
-        const rg = document.getElementById('rm-god');
-        const re = document.getElementById('rm-esp');
-        const ri = document.getElementById('rm-item');
-        if (rg) rg.checked = !!mods.godmode;
-        if (re) re.checked = !!mods.esp_players;
-        if (ri) ri.checked = !!mods.esp_items;
+        renderBotRemoteForm(mods);
       }
     }
   }, 3000);
